@@ -92,7 +92,6 @@ Hufkens</h4>
 
     
     
-<p>load package and libraries</p>
 <p>Read in the reference data from an independent run of the original
 code. The kernel bit is deterministic if given a set of parameters.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
@@ -152,12 +151,26 @@ the above parameters).</p>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p>Plot a 1:1 figure to confirm this.</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">output</span><span class="op">$</span><span class="va">likelihood</span>, <span class="va">reference</span><span class="op">$</span><span class="va">likelihood</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/abline.html" class="external-link">abline</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">1</span><span class="op">)</span></span></code></pre></div>
 <p>Now, run a true prediction (simulation) run with the fit model
 parameters by setting the optimization parameter to FALSE (the
 default).</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">output</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hr_predict.html">hr_predict</a></span><span class="op">(</span></span>
+<span>  data <span class="op">=</span> <span class="va">r</span>,</span>
+<span>  par <span class="op">=</span> <span class="va">params</span>,</span>
+<span>  obs <span class="op">=</span> <span class="fu">here</span><span class="op">(</span><span class="st">"data/tracks/Aspromonte_roedeer_traj.txt"</span><span class="op">)</span>,</span>
+<span>  resolution <span class="op">=</span> <span class="fl">25</span>,</span>
+<span>  steps <span class="op">=</span> <span class="fl">10</span>,</span>
+<span>  runs <span class="op">=</span> <span class="fl">10</span>,</span>
+<span>  optimization <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 <p>This returns a <code>hr_predict</code> class for output, which can
 return a summary plot through a method for quick review.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">output</span><span class="op">)</span></span></code></pre></div>
   </div>
 
