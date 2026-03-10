@@ -9,8 +9,6 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-load package and libraries
-
 ```{r echo = FALSE, message=FALSE, eval = FALSE}
 # the main package wrapper
 library(homeranger)
@@ -86,14 +84,14 @@ output <- hr_predict(
 
 Plot a 1:1 figure to confirm this.
 
-```{r echo = FALSE, message = FALSE, eval = FALSE}
+```{r echo = TRUE, message = FALSE, eval = FALSE}
 plot(output$likelihood, reference$likelihood)
 abline(0,1)
 ```
 
 Now, run a true prediction (simulation) run with the fit model parameters by setting the optimization parameter to FALSE (the default).
 
-```{r echo = FALSE, message = FALSE, eval = FALSE}
+```{r echo = TRUE, message = FALSE, eval = FALSE}
 output <- hr_predict(
   data = r,
   par = params,
