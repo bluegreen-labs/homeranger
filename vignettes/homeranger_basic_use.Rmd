@@ -1,10 +1,13 @@
 ---
-title: "homeranger demo"
-format: html
-editor: visual
+title: "Basic use"
+author: "Koen Hufkens"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Basic use}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
-
-# {homeranger} demo
 
 load package and libraries
 
@@ -14,7 +17,6 @@ library(homeranger)
 
 # dependencies
 library(terra)
-library(sf)
 library(tidyverse)
 library(here)
 ```
@@ -95,7 +97,7 @@ Now, run a true prediction (simulation) run with the fit model parameters by set
 output <- hr_predict(
   data = r,
   par = params,
-  obs = here("data/Aspromonte_roedeer_traj.txt"),
+  obs = here("data/tracks/Aspromonte_roedeer_traj.txt"),
   resolution = 25,
   steps = 10,
   runs = 10,
