@@ -16,9 +16,9 @@ Roe deer tracks for the full set of observations (`Aspromonte_roedeer_traj.txt`)
 
 ### Config
 
-The configuration files of different runs of the original publication.
-
+The configuration files of different runs of the original publication, only the `config_best_Mmem_fitting.txt` should be used as a reference set of parameters.
 
 ### Validation
 
+The output of model runs (`objective_function.*`), and a composite `global_resources.asc` which is the composite of the driver data and determines the order of the layers in the data cube (generated from the driver  maps).
 
