@@ -1,7 +1,5 @@
 library(homeranger)
 library(terra)
-library(sf)
-library(tidyverse)
 
 # read in the reference data, these are calculated with the
 # shared original code and provide the step based likelihoods
