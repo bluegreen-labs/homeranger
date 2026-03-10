@@ -1,4 +1,4 @@
-# homeranger <img src="logo.png" align="right" height="138.5"/>
+# homeranger <img src="logo.png" alt = "logo" align="right" height="138" width = "138">
 
 [![CRAN_Status_Badge](https://www.r-pkg.org/badges/version/homeranger)](https://cran.r-project.org/package=homeranger)
 [![](https://cranlogs.r-pkg.org/badges/grand-total/homeranger)](https://cran.r-project.org/package=homeranger)
