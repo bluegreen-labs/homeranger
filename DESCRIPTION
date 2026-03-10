@@ -1,0 +1,42 @@
+Package: homeranger
+Title: A home range estimation framework
+Version: 0.1
+Authors@R: c(
+    person(
+        family = "Ranc",
+        given = "Nathan",
+        email = "nathan.ranc@inrae.fr",
+        role = c("aut","cph"),
+        comment = c(ORCID = "0000-0002-3167-2251")
+        ),
+    person(
+        family = "Hufkens",
+        given = "Koen",
+        email = "koen.hufkens@gmail.com",
+        role = c("aut","cre"),
+        comment = c(ORCID = "0000-0002-5070-8109")
+        )
+    )
+Description: Calculates home range use from biologging tracks and environmental co-variates. The framework is a refactored and extended version of Ranc et al. (2022) <https://doi.org/10.1111/ele.13869>
+Depends:
+    R (>= 4.2)
+Imports:
+    Rcpp (>= 1.0.14),
+    RcppArmadillo,
+    BayesianTools,
+    terra,
+    tidyterra,
+    sf,
+    ggplot2,
+    rstac
+LinkingTo: Rcpp, RcppArmadillo
+License: AGPL-3
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
+Suggests:
+    rmarkdown,
+    covr,
+    testthat,
+    knitr
+VignetteBuilder: knitr
+Encoding: UTF-8

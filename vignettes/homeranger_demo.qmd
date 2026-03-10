@@ -1,0 +1,112 @@
+---
+title: "homeranger demo"
+format: html
+editor: visual
+---
+
+# {homeranger} demo
+
+load package and libraries
+
+```{r echo = FALSE, message=FALSE}
+# the main package wrapper
+library(homeranger)
+
+# dependencies
+library(terra)
+library(sf)
+library(tidyverse)
+library(here)
+```
+
+Read in the reference data from an independent run of the original code. The kernel bit is deterministic if given a set of parameters.
+
+```{r echo = FALSE, message = FALSE}
+reference <- readr::read_csv(here("data/validation/objective_function_detail.csv"))
+reference$likelihood[reference$likelihood == -9999] <- NA
+```
+
+Set the coefficients (using `config_best_Mmem_fitting.txt`) as used in the above reference run. Config values are provided as a nested list, with the last values the resource selection coefficients.
+
+```{r echo = FALSE, message = FALSE}
+params <- list(
+  r_l = 27.5332236990522,
+  w_l = 0,
+  r_d = 0.018257876686841,
+  w_d = 0.9999,
+  r_dist = 0.0412536435305482,
+  w_dist = 0.9999,
+  step_length_dist = 0.00216275705935606,
+  step_length_shape = 1.14267311221975,
+  threshold_approx_kernel = 7000,
+  threshold_memory_kernel = 1000,
+
+  # resource selection coefficients should be
+  # a named list for driver data layer validation
+  # and correct data processing
+  coef = c(
+    "slope" = 0.272835968106296,
+    "slope_sq" = -0.093687792157105,
+    "tcd_325grain"= 0.177991482087775,
+    "tcd_325grain_sq" = -0.140639949444926,
+    "landcover_5322" = 0.591063382485486,
+    "landcover_agri" = -0.811974081226742
+  )
+)
+
+```
+
+Using GDAL and the `terra` package load all raster layers (\*.asc) files.
+
+```{r}
+# load raster stack
+r <- terra::rast(list.files(here("data/drivers/"),"*.asc", full.names = TRUE))
+plot(r)
+
+r <- subset(r, names(params$coef))
+plot(r)
+
+r <- as.array(r)
+```
+
+Pass everything to the `hr_predict()` function. I set optimization to `TRUE` this will run the `kernel` method and should result in the same output as the original code (given the above parameters).
+
+```{r echo = FALSE, message = FALSE}
+output <- hr_predict(
+  data = r,
+  par = params,
+  obs = here("data/Aspromonte_roedeer_traj.txt"),
+  resolution = 25,
+  optimization = TRUE,
+  verbose = TRUE
+)
+```
+
+Plot a 1:1 figure to confirm this.
+
+```{r echo = FALSE, message = FALSE}
+plot(output$likelihood, reference$likelihood)
+abline(0,1)
+```
+
+Now, run a true prediction (simulation) run with the fit model parameters by setting the optimization parameter to FALSE (the default).
+
+```{r echo = FALSE, message = FALSE}
+output <- hr_predict(
+  data = r,
+  par = params,
+  obs = here("data/Aspromonte_roedeer_traj.txt"),
+  resolution = 25,
+  steps = 10,
+  runs = 10,
+  optimization = FALSE,
+  verbose = TRUE
+)
+
+```
+
+This returns a `hr_predict` class for output, which can return a summary plot through a method for quick review.
+
+```{r echo = FALSE, message = FALSE}
+plot(output)
+```
