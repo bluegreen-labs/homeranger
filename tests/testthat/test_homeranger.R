@@ -22,19 +22,23 @@ test_that("validate model run", {
     )
   )
 
+  # load compressed data
+  load(system.file("extdata/raster_maps.rda", package = "homeranger"))
+  load(system.file("extdata/reference_data.rda", package = "homeranger"))
+
   # run the model for these parameters
   output <- hr_predict(
-    data = homeranger::raster_maps,
+    data = raster_maps,
     par = params,
     obs = system.file("extdata/Aspromonte_roedeer_traj.txt", package = "homeranger"),
     resolution = 25,
     optimization = FALSE,
-    verbose = TRUE
+    verbose = FALSE
   )
 
   # total residuals should add up to 0
   output$likelihood[output$likelihood == -9999] <- NA
-  residuals <- sum(output$likelihood - homeranger::reference_data$likelihood, na.rm = TRUE)
+  residuals <- sum(output$likelihood - reference_data$likelihood, na.rm = TRUE)
   print(residuals)
   expect_equal(residuals, 0)
 })
