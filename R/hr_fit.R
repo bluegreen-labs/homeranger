@@ -4,18 +4,15 @@
 #' calibration of the home_range_cpp() C++ function
 #' through hr_cost().
 #'
-#' @param drivers A data frame with driver data. See \code{\link{p_model_drivers}}
-#' for a description of the data structure.
+#' @param drivers A data frame with driver data.
 #' @param obs A data frame containing observational data used for model
-#'  calibration. See \code{\link{p_model_validation}} for a description of the data
-#'  structure.
+#'  calibration.
 #' @param settings A list containing model calibration settings.
 #' @param optim_out A logical indicating whether the function returns the raw
 #'  output of the optimization functions (defaults to TRUE).
 #' @param parallel support parallel processing
 #' @param ... Optional arguments passed on to the cost function specified as
 #'  \code{settings$metric}.
-#'  .
 #' @return A named list containing the calibrated parameter vector `par` and
 #' the output object from the optimization `mod`. For more details on this
 #' output and how to evaluate it, see \link[BayesianTools:runMCMC]{runMCMC} (also

@@ -9,9 +9,9 @@
 #' @param crs an equal area CRS projection reference (default = EPSG:3035,
 #'  or extended LAEA Europe)
 #'
-#' @returns
-#' @export nested list with the regularized data and observed track, also saves
+#' @returns nested list with the regularized data and observed track, also saves
 #'  the used projection crs
+#' @export
 
 hr_regularize <- function(
     data,
@@ -31,7 +31,7 @@ hr_regularize <- function(
 
   # subset the input data to conform to the
   # provided names of layers in the parameters
-  data_subset <- subset(data, par$names)
+  #data_subset <- subset(data, par$names)
 
   # retain the extent and projection details of the underlying
   # grid setup

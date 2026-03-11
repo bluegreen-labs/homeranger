@@ -22,6 +22,8 @@ hr_predict(
 
 \item{obs}{observed track}
 
+\item{resolution}{resolution}
+
 \item{steps}{steps}
 
 \item{runs}{runs}

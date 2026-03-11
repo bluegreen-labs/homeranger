@@ -17,12 +17,14 @@ Authors@R: c(
         comment = c(ORCID = "0000-0002-5070-8109")
         )
     )
-Description: Calculates home range use from biologging tracks and environmental co-variates. The framework is a refactored and extended version of Ranc et al. (2022) <https://doi.org/10.1111/ele.13869>
+Description: A tool to calculate home ranges from biologging tracks and 
+    environmental co-variates. The framework is a refactored and extended 
+    version of Ranc et al (2022) <https://doi.org/10.1111/ele.13869>.
 Depends:
     R (>= 4.2)
 Imports:
     Rcpp (>= 1.0.14),
-    RcppArmadillo,
+    rlang,
     BayesianTools,
     terra,
     tidyterra,

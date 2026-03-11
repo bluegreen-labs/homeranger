@@ -6,6 +6,7 @@
 ^analysis$
 ^manuscript$
 ^data-raw$
+^data$
 ^logo$
 
 # R-markdown files in the root folder.
@@ -16,6 +17,7 @@
 ^contact\.md$
 ^cran-comments\.md$
 ^review-notes\.md$
+^logo\..*$
 
 # R Stuff
 ^.*\.Rproj$

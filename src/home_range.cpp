@@ -1,10 +1,18 @@
-/*
- * home_range.cpp
- *
- *  Created on: 3 November 2019
- *      Author: Nathan Ranc
- *      Refactored: Koen Hufkens (2026)
- */
+//' @name home_range_cpp
+//' @title Main home range estimation function
+//' @description C++ back-end function doing all the heavy lifting
+//' @param data data cube of the state space
+//' @param par parameters for model execution or fitting
+//' @param trajectoryPath location of the track file
+//' @param resolution resolution (dimensions) of the state space (as not georeferenced)
+//' @param nSimulatedSteps number of simulated steps to run
+//' @param nSimulatedRuns number of runs to simulate
+//' @param optimization return optimization outputs (TRUE or FALSE)
+//' @param verbose provide verbose output (TRUE or FALSE)
+//' @export
+//'
+//' @return simulated model locations or a target value for optimization
+//'  (cost function)
 
 #include <RcppArmadillo.h>
 // [[Rcpp::depends(RcppArmadillo)]]
@@ -604,6 +612,8 @@ List home_range_cpp(
     );
   }
 
-  // how to return a matrix
-  //return List::create(_["NULL"] = NULL);
+  // empty return to not trigger
+  // warning: control reaches end of non-void function [-Wreturn-type]
+  // reconsider context switching!
+  return List::create(_["NULL"] = NULL);
 }

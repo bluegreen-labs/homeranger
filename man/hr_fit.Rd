@@ -4,31 +4,29 @@
 \alias{hr_fit}
 \title{Fit a home range model}
 \usage{
-hr_fit(drivers, obs, settings, optim_out = TRUE, ...)
+hr_fit(drivers, obs, settings, optim_out = TRUE, parallel = FALSE, ...)
 }
 \arguments{
-\item{drivers}{A data frame with driver data. See \code{\link{p_model_drivers}}
-for a description of the data structure.}
+\item{drivers}{A data frame with driver data.}
 
 \item{obs}{A data frame containing observational data used for model
-calibration. See \code{\link{p_model_validation}} for a description of the data
-structure.}
+calibration.}
 
 \item{settings}{A list containing model calibration settings.}
 
 \item{optim_out}{A logical indicating whether the function returns the raw
 output of the optimization functions (defaults to TRUE).}
 
+\item{parallel}{support parallel processing}
+
 \item{...}{Optional arguments passed on to the cost function specified as
-\code{settings$metric}.
-.}
+\code{settings$metric}.}
 }
 \value{
 A named list containing the calibrated parameter vector \code{par} and
 the output object from the optimization \code{mod}. For more details on this
 output and how to evaluate it, see \link[BayesianTools:runMCMC]{runMCMC} (also
 \href{https://florianhartig.github.io/BayesianTools/articles/BayesianTools.html}{this post})
-and \link[GenSA]{GenSA}.
 }
 \description{
 This is the main function that handles the

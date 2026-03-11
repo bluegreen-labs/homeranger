@@ -14,6 +14,10 @@ hr_regularize(data, obs, crs = "EPSG:3035")
 \item{crs}{an equal area CRS projection reference (default = EPSG:3035,
 or extended LAEA Europe)}
 }
+\value{
+nested list with the regularized data and observed track, also saves
+the used projection crs
+}
 \description{
 Regularizes spatial input data to a common equal area grid. It also performs
 sanity checks on the inputs to check if observations cover the spatial grid

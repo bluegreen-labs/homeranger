@@ -3,6 +3,7 @@
 #' @param par parameters
 #' @param data data
 #' @param obs observed track
+#' @param resolution resolution
 #' @param steps steps
 #' @param runs runs
 #' @param optimization optimize
