@@ -95,7 +95,7 @@ Hufkens</h4>
 <p>Read in the reference data from an independent run of the original
 code. The kernel bit is deterministic if given a set of parameters.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">reference</span> <span class="op">&lt;-</span> <span class="fu">readr</span><span class="fu">::</span><span class="fu">read_csv</span><span class="op">(</span><span class="fu">here</span><span class="op">(</span><span class="st">"data/validation/objective_function_detail.csv"</span><span class="op">)</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">reference</span> <span class="op">&lt;-</span> <span class="fu">readr</span><span class="fu">::</span><span class="fu">read_csv</span><span class="op">(</span><span class="fu">here</span><span class="op">(</span><span class="st">"data-raw/validation/objective_function_detail.csv"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">reference</span><span class="op">$</span><span class="va">likelihood</span><span class="op">[</span><span class="va">reference</span><span class="op">$</span><span class="va">likelihood</span> <span class="op">==</span> <span class="op">-</span><span class="fl">9999</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">NA</span></span></code></pre></div>
 <p>Set the coefficients (using
 <code>config_best_Mmem_fitting.txt</code>) as used in the above
@@ -130,7 +130,7 @@ last values the resource selection coefficients.</p>
 (*.asc) files.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># load raster stack</span></span>
-<span><span class="va">r</span> <span class="op">&lt;-</span> <span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/rast.html" class="external-link">rast</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="fu">here</span><span class="op">(</span><span class="st">"data/drivers/"</span><span class="op">)</span>,<span class="st">"*.asc"</span>, full.names <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">r</span> <span class="op">&lt;-</span> <span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/rast.html" class="external-link">rast</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="fu">here</span><span class="op">(</span><span class="st">"data-raw/drivers/"</span><span class="op">)</span>,<span class="st">"*.asc"</span>, full.names <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">r</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">r</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rspatial.github.io/terra/reference/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">r</span>, <span class="fu"><a href="https://rspatial.github.io/terra/reference/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">params</span><span class="op">$</span><span class="va">coef</span><span class="op">)</span><span class="op">)</span></span>
@@ -145,7 +145,7 @@ the above parameters).</p>
 <code class="sourceCode R"><span><span class="va">output</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hr_predict.html">hr_predict</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">r</span>,</span>
 <span>  par <span class="op">=</span> <span class="va">params</span>,</span>
-<span>  obs <span class="op">=</span> <span class="fu">here</span><span class="op">(</span><span class="st">"data/Aspromonte_roedeer_traj.txt"</span><span class="op">)</span>,</span>
+<span>  obs <span class="op">=</span> <span class="fu">here</span><span class="op">(</span><span class="st">"data-raw/Aspromonte_roedeer_traj.txt"</span><span class="op">)</span>,</span>
 <span>  resolution <span class="op">=</span> <span class="fl">25</span>,</span>
 <span>  optimization <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
@@ -161,7 +161,7 @@ default).</p>
 <code class="sourceCode R"><span><span class="va">output</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hr_predict.html">hr_predict</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">r</span>,</span>
 <span>  par <span class="op">=</span> <span class="va">params</span>,</span>
-<span>  obs <span class="op">=</span> <span class="fu">here</span><span class="op">(</span><span class="st">"data/tracks/Aspromonte_roedeer_traj.txt"</span><span class="op">)</span>,</span>
+<span>  obs <span class="op">=</span> <span class="fu">here</span><span class="op">(</span><span class="st">"data-raw/tracks/Aspromonte_roedeer_traj.txt"</span><span class="op">)</span>,</span>
 <span>  resolution <span class="op">=</span> <span class="fl">25</span>,</span>
 <span>  steps <span class="op">=</span> <span class="fl">10</span>,</span>
 <span>  runs <span class="op">=</span> <span class="fl">10</span>,</span>

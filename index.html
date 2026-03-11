@@ -89,7 +89,7 @@
 <h2 id="how-to-cite-this-package">How to cite this package<a class="anchor" aria-label="anchor" href="#how-to-cite-this-package"></a>
 </h2>
 <blockquote>
-<p>Ranc and Hufkens (2026). homeranger: Home range modelling framework etc. <a href="https://doi.org/10.5281/zenodo.XYZ" class="external-link uri">https://doi.org/10.5281/zenodo.XYZ</a>. and the original model description: Ranc, N., Cagnacci, F., Moorcroft, P.R., 2022. Memory drives the formation of animal home ranges: Evidence from a reintroduction. Ecology Letters 25, 716–728. <a href="https://doi.org/10.1111/ele.13869" class="external-link uri">https://doi.org/10.1111/ele.13869</a>.</p>
+<p>Ranc, N., Cagnacci, F., Moorcroft, P.R., 2022. Memory drives the formation of animal home ranges: Evidence from a reintroduction. Ecology Letters 25, 716–728. <a href="https://doi.org/10.1111/ele.13869" class="external-link uri">https://doi.org/10.1111/ele.13869</a>.</p>
 </blockquote>
 </div>
 <div class="section level2">
@@ -129,7 +129,7 @@
 <span><span class="co"># read in the reference data, these are calculated with the</span></span>
 <span><span class="co"># shared original code and provide the step based likelihoods</span></span>
 <span><span class="co"># this output should match the output of the package for parity</span></span>
-<span><span class="va">reference</span> <span class="op">&lt;-</span> <span class="fu">read_csv</span><span class="op">(</span><span class="st">"data/validation/objective_function_detail.csv"</span><span class="op">)</span></span>
+<span><span class="va">reference</span> <span class="op">&lt;-</span> <span class="fu">read_csv</span><span class="op">(</span><span class="st">"data-raw/validation/objective_function_detail.csv"</span><span class="op">)</span></span>
 <span><span class="va">reference</span><span class="op">$</span><span class="va">likelihood</span><span class="op">[</span><span class="va">reference</span><span class="op">$</span><span class="va">likelihood</span> <span class="op">==</span> <span class="op">-</span><span class="fl">9999</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">NA</span></span>
 <span></span>
 <span><span class="co"># specify the parameters as used in the default run</span></span>
@@ -164,7 +164,7 @@
 <span><span class="co"># based upon the order of the coefficients in the parameter</span></span>
 <span><span class="co"># list - finally convert to 3D array to be passed to the</span></span>
 <span><span class="co"># low level C++ functions</span></span>
-<span><span class="va">r</span> <span class="op">&lt;-</span> <span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/rast.html" class="external-link">rast</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="st">"data/drivers/"</span>,<span class="st">"*.asc"</span>, full.names <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">r</span> <span class="op">&lt;-</span> <span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/rast.html" class="external-link">rast</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="st">"data-raw/drivers/"</span>,<span class="st">"*.asc"</span>, full.names <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">r</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rspatial.github.io/terra/reference/coerce.html" class="external-link">as.array</a></span><span class="op">(</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">r</span>, <span class="fu"><a href="https://rspatial.github.io/terra/reference/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">params</span><span class="op">$</span><span class="va">coef</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">r</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">r</span><span class="op">)</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">0</span></span></code></pre></div>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
@@ -174,7 +174,7 @@
 <span><span class="va">output</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/hr_predict.html">hr_predict</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">r</span>,</span>
 <span>  par <span class="op">=</span> <span class="va">params</span>,</span>
-<span>  obs <span class="op">=</span> <span class="st">"data/tracks/Aspromonte_roedeer_traj.txt"</span>,</span>
+<span>  obs <span class="op">=</span> <span class="st">"data-raw/tracks/Aspromonte_roedeer_traj.txt"</span>,</span>
 <span>  resolution <span class="op">=</span> <span class="fl">25</span>,</span>
 <span>  optimization <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
