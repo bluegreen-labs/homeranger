@@ -22,7 +22,7 @@ library(here)
 Read in the reference data from an independent run of the original code. The kernel bit is deterministic if given a set of parameters.
 
 ```{r echo = TRUE, message = FALSE, eval = FALSE}
-reference <- readr::read_csv(here("data/validation/objective_function_detail.csv"))
+reference <- readr::read_csv(here("data-raw/validation/objective_function_detail.csv"))
 reference$likelihood[reference$likelihood == -9999] <- NA
 ```
 
@@ -60,7 +60,7 @@ Using GDAL and the `terra` package load all raster layers (\*.asc) files.
 
 ```{r, eval = FALSE}
 # load raster stack
-r <- terra::rast(list.files(here("data/drivers/"),"*.asc", full.names = TRUE))
+r <- terra::rast(list.files(here("data-raw/drivers/"),"*.asc", full.names = TRUE))
 plot(r)
 
 r <- subset(r, names(params$coef))
@@ -75,7 +75,7 @@ Pass everything to the `hr_predict()` function. I set optimization to `TRUE` thi
 output <- hr_predict(
   data = r,
   par = params,
-  obs = here("data/Aspromonte_roedeer_traj.txt"),
+  obs = here("data-raw/Aspromonte_roedeer_traj.txt"),
   resolution = 25,
   optimization = TRUE,
   verbose = TRUE
@@ -95,7 +95,7 @@ Now, run a true prediction (simulation) run with the fit model parameters by set
 output <- hr_predict(
   data = r,
   par = params,
-  obs = here("data/tracks/Aspromonte_roedeer_traj.txt"),
+  obs = here("data-raw/tracks/Aspromonte_roedeer_traj.txt"),
   resolution = 25,
   steps = 10,
   runs = 10,

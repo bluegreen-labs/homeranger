@@ -4,8 +4,6 @@ This package allows for the estimation and simulation of home range behaviour, i
 
 ## How to cite this package
 
-> Ranc and Hufkens (2026). homeranger: a home range estimation framework.
-> <https://doi.org/10.5281/zenodo.XYZ> (DOI PENDING); and the original model description:
 > Ranc, N., Cagnacci, F., Moorcroft, P.R., 2022. Memory drives the formation of animal home ranges: Evidence from a reintroduction. Ecology Letters 25, 716–728. https://doi.org/10.1111/ele.13869.
 
 ## Installation
