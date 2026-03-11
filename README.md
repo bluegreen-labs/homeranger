@@ -4,10 +4,8 @@ This package allows for the estimation and simulation of home range behaviour, i
 
 ## How to cite this package
 
-> Ranc and Hufkens (2026). homeranger:
-> Home range modelling framework etc.
-> <https://doi.org/10.5281/zenodo.XYZ>.
-> and the original model description:
+> Ranc and Hufkens (2026). homeranger: a home range estimation framework.
+> <https://doi.org/10.5281/zenodo.XYZ> (DOI PENDING); and the original model description:
 > Ranc, N., Cagnacci, F., Moorcroft, P.R., 2022. Memory drives the formation of animal home ranges: Evidence from a reintroduction. Ecology Letters 25, 716–728. https://doi.org/10.1111/ele.13869.
 
 ## Installation
@@ -51,7 +49,7 @@ library(terra)
 # read in the reference data, these are calculated with the
 # shared original code and provide the step based likelihoods
 # this output should match the output of the package for parity
-reference <- read_csv("data/validation/objective_function_detail.csv")
+reference <- read_csv("data-raw/validation/objective_function_detail.csv")
 reference$likelihood[reference$likelihood == -9999] <- NA
 
 # specify the parameters as used in the default run
@@ -88,7 +86,7 @@ params <- list(
 # based upon the order of the coefficients in the parameter
 # list - finally convert to 3D array to be passed to the
 # low level C++ functions
-r <- terra::rast(list.files("data/drivers/","*.asc", full.names = TRUE))
+r <- terra::rast(list.files("data-raw/drivers/","*.asc", full.names = TRUE))
 r <- as.array(subset(r, names(params$coef)))
 r[is.na(r)] <- 0
 ```
@@ -100,7 +98,7 @@ r[is.na(r)] <- 0
 output <- hr_predict(
   data = r,
   par = params,
-  obs = "data/tracks/Aspromonte_roedeer_traj.txt",
+  obs = "data-raw/tracks/Aspromonte_roedeer_traj.txt",
   resolution = 25,
   optimization = TRUE,
   verbose = TRUE
