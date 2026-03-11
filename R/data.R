@@ -3,7 +3,7 @@
 #' Map data for validation and tests
 #'
 #' @format ## `r`
-"r"
+"raster_maps"
 
 #' Reference modeled track
 #'
@@ -17,4 +17,4 @@
 #'   \item{c_patch}{column}
 #'   \item{likelihood}{likelihood}
 #' }
-"reference"
+"reference_data"
