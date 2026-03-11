@@ -5,6 +5,8 @@
 #' @return a plot (map) of predicted statistics
 #' @keywords model, behaviour
 #' @export
+#'
+#' @importFrom rlang .data
 
 # plot data if requested
 plot.hr_predict <- function(x, ...){
@@ -13,7 +15,7 @@ plot.hr_predict <- function(x, ...){
   map_data <- terra::rast(x$resources[[1]])
   locations <-x$locations
   locations_sf <- locations |>
-    na.omit() |>
+    stats::na.omit() |>
     sf::st_as_sf(coords = c("col", "row"))
 
   p <- ggplot2::ggplot() +
@@ -30,7 +32,7 @@ plot.hr_predict <- function(x, ...){
     ggplot2::geom_sf(
       data = locations_sf,
       ggplot2::aes(
-        colour = ID
+        colour = .data$ID
       )
     )
 
