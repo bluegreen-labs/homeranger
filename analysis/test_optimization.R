@@ -1,5 +1,6 @@
 library(homeranger)
-library(terra)
+
+load(system.file("extdata/raster_maps.rda", package = "homeranger"))
 
 settings <- list(
   metric = hr_cost,
@@ -7,7 +8,7 @@ settings <- list(
     sampler = "DEzs",
     settings = list(
       burnin = 10,
-      iterations = 100
+      iterations = 30
     )
   ),
   par = list(
@@ -32,17 +33,12 @@ settings <- list(
   )
 )
 
-# sort and subset data
-r <- terra::rast(list.files("data/drivers/","*.asc", full.names = TRUE))
-r <- as.array(subset(r, names(coef)))
-r[is.na(r)] <- 0
-
 # calibrate the model and optimize free parameters
 pars <- hr_fit(
-  drivers = r,
+  drivers = raster_maps,
   obs = "data/Aspromonte_roedeer_traj_1196.txt",
   settings = settings,
-  parallel = TRUE
+  parallel = FALSE
 )
 
 # plot the parameter distributions
