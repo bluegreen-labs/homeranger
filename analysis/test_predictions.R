@@ -4,7 +4,7 @@ library(terra)
 # read in the reference data, these are calculated with the
 # shared original code and provide the step based likelihoods
 # this output should match the output of the package for parity
-reference <- read_csv("data/validation/objective_function_detail.csv")
+reference <- read.csv("data/validation/objective_function_detail.csv")
 reference$likelihood[reference$likelihood == -9999] <- NA
 
 # specify the parameters as used in the default run
