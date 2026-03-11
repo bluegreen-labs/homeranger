@@ -64,7 +64,7 @@ through hr_cost().</p>
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">hr_fit</span><span class="op">(</span><span class="va">drivers</span>, <span class="va">obs</span>, <span class="va">settings</span>, optim_out <span class="op">=</span> <span class="cn">TRUE</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">hr_fit</span><span class="op">(</span><span class="va">drivers</span>, <span class="va">obs</span>, <span class="va">settings</span>, optim_out <span class="op">=</span> <span class="cn">TRUE</span>, parallel <span class="op">=</span> <span class="cn">FALSE</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -72,14 +72,12 @@ through hr_cost().</p>
 
 
 <dl><dt id="arg-drivers">drivers<a class="anchor" aria-label="anchor" href="#arg-drivers"></a></dt>
-<dd><p>A data frame with driver data. See <code>p_model_drivers</code>
-for a description of the data structure.</p></dd>
+<dd><p>A data frame with driver data.</p></dd>
 
 
 <dt id="arg-obs">obs<a class="anchor" aria-label="anchor" href="#arg-obs"></a></dt>
 <dd><p>A data frame containing observational data used for model
-calibration. See <code>p_model_validation</code> for a description of the data
-structure.</p></dd>
+calibration.</p></dd>
 
 
 <dt id="arg-settings">settings<a class="anchor" aria-label="anchor" href="#arg-settings"></a></dt>
@@ -91,10 +89,13 @@ structure.</p></dd>
 output of the optimization functions (defaults to TRUE).</p></dd>
 
 
+<dt id="arg-parallel">parallel<a class="anchor" aria-label="anchor" href="#arg-parallel"></a></dt>
+<dd><p>support parallel processing</p></dd>
+
+
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>Optional arguments passed on to the cost function specified as
-<code>settings$metric</code>.
-.</p></dd>
+<code>settings$metric</code>.</p></dd>
 
 </dl></div>
     <div id="value">
@@ -102,8 +103,7 @@ output of the optimization functions (defaults to TRUE).</p></dd>
     <p>A named list containing the calibrated parameter vector <code>par</code> and
 the output object from the optimization <code>mod</code>. For more details on this
 output and how to evaluate it, see <a href="https://rdrr.io/pkg/BayesianTools/man/runMCMC.html" class="external-link">runMCMC</a> (also
-<a href="https://florianhartig.github.io/BayesianTools/articles/BayesianTools.html" class="external-link">this post</a>)
-and GenSA.</p>
+<a href="https://florianhartig.github.io/BayesianTools/articles/BayesianTools.html" class="external-link">this post</a>)</p>
     </div>
 
   </div>
