@@ -20,10 +20,12 @@
 #'  to accommodate for a sufficiently large home range area. Value should be
 #'  adjusted to the target species.
 #' @param path output path
+#' @param overwrite overwrite / and re-download the data
 #'
 #' @return raster maps covering your area of interest as geotiff
 #' @export
 #' @import rstac
+#' @import units
 
 hr_raster_maps <- function(
     track,
@@ -78,7 +80,7 @@ hr_raster_maps <- function(
     # check if file exists, if so skip
     filename <- file.path(path, s["filename"])
 
-    if(file.exists(filename)){
+    if(file.exists(filename) & !overwrite){
       warning(sprintf("file %s exists, skipping", filename))
       return(NULL)
     }
@@ -124,7 +126,7 @@ hr_raster_maps <- function(
       terra::writeRaster(
         r,
         filename = filename,
-        overwrite = TRUE
+        overwrite = overwrite
       )
     )
 

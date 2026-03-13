@@ -27,6 +27,7 @@ Imports:
     rlang,
     BayesianTools,
     terra,
+    units,
     tidyterra,
     sf,
     ggplot2,

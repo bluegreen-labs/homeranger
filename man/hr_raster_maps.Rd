@@ -24,6 +24,8 @@ to accommodate for a sufficiently large home range area. Value should be
 adjusted to the target species.}
 
 \item{path}{output path}
+
+\item{overwrite}{overwrite / and re-download the data}
 }
 \value{
 raster maps covering your area of interest as geotiff
