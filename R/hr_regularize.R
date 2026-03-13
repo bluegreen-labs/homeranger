@@ -19,6 +19,24 @@ hr_regularize <- function(
     crs = "EPSG:3035"
 ){
 
+
+  # rstac download
+  # dem <- rstac_download(bbox)
+  # lc <- rstac_download(bbox)
+  # slope <- sf::gdal_utils()
+
+  # resample to common resolution and combine
+  # cube <- terra::rast(c(slope, slope^2, forest_cover_325m, forest_cover))
+
+  # extract locations of gps points from the cube
+  # coords <- extract(track, cube, xy = TRUE)
+
+  # drop referencing information save externally
+  #geo <- get_geo(cube)
+  #cube_final <- drop_geo(cube)
+
+  # return(cube_final, coords, geo)
+
   # reproject the data and observations to an equal area setup
   # and a common grid
 
