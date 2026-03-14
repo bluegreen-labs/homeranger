@@ -1,7 +1,8 @@
 ## homeranger v0.2
 
-- adding data download function
-- adding documenation for data formatting
+- adding data download function `hr_raster_maps()`
+- adding documentation for data formatting
+- adding a coordinate conversion function `hr_xy()`
 
 ## homeranger v0.1 (alpha)
 
