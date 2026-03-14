@@ -1,16 +1,19 @@
 <urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
 <url><loc>/404.html</loc></url>
 <url><loc>/LICENSE-text.html</loc></url>
-<url><loc>/articles/homeranger_basic_use.html</loc></url>
+<url><loc>/articles/homeranger_model_calibration.html</loc></url>
+<url><loc>/articles/homeranger_model_prediction.html</loc></url>
 <url><loc>/articles/index.html</loc></url>
 <url><loc>/authors.html</loc></url>
 <url><loc>/index.html</loc></url>
+<url><loc>/news/index.html</loc></url>
 <url><loc>/reference/home_range_cpp.html</loc></url>
 <url><loc>/reference/hr_cost.html</loc></url>
 <url><loc>/reference/hr_fit.html</loc></url>
-<url><loc>/reference/hr_format_drivers.html</loc></url>
 <url><loc>/reference/hr_predict.html</loc></url>
+<url><loc>/reference/hr_raster_maps.html</loc></url>
 <url><loc>/reference/hr_regularize.html</loc></url>
+<url><loc>/reference/hr_xy.html</loc></url>
 <url><loc>/reference/index.html</loc></url>
 <url><loc>/reference/par_delist.html</loc></url>
 <url><loc>/reference/par_relist.html</loc></url>
