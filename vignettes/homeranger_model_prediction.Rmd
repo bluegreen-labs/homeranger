@@ -1,10 +1,10 @@
 ---
-title: "Basic use"
+title: "Model prediction"
 author: "Koen Hufkens"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Basic use}
+  %\VignetteIndexEntry{Model prediction}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
