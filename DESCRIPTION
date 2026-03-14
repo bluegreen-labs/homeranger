@@ -29,6 +29,7 @@ Imports:
     terra,
     units,
     tidyterra,
+    dplyr,
     sf,
     ggplot2,
     rstac

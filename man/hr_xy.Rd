@@ -7,9 +7,9 @@
 hr_xy(map, track = NULL, crs = "+proj=longlat +datum=WGS84")
 }
 \arguments{
-\item{map}{a {terra} raster map (stack)}
+\item{map}{a \{terra\} raster map (stack)}
 
-\item{track}{an {sf} multi-point file}
+\item{track}{an \{sf\} multi-point file}
 
 \item{crs}{a valid CRS description (default = "+proj=longlat +datum=WGS84")}
 }

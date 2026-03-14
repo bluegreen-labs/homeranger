@@ -7,8 +7,8 @@
 #' lon/lat (WGS84) can be used but is not encouraged. The project should be
 #' chosen based on the locale.
 #'
-#' @param map a {terra} raster map (stack)
-#' @param track an {sf} multi-point file
+#' @param map a \{terra\} raster map (stack)
+#' @param track an \{sf\} multi-point file
 #' @param crs a valid CRS description (default = "+proj=longlat +datum=WGS84")
 #'
 #' @returns a nested list containing a converted map array and a list of
@@ -22,18 +22,18 @@ hr_xy <- function(
   ){
 
   # reproject to equal area locations
-  map <- project(map, crs)
+  map <- terra::project(map, crs)
 
   if(!is.null(track)){
     track <- track |>
-      st_transform(crs) |>
-      vect()
+      sf::st_transform(crs) |>
+      terra::vect()
 
     # extract XY coordinates
     p <- terra::extract(map, track, xy = TRUE) |>
       dplyr::mutate(
-        col = colFromX(map, x),
-        row = rowFromY(map, y)
+        col = terra::colFromX(map, .data$x),
+        row = terra::rowFromY(map, .data$y)
       ) |>
       dplyr::select(
         "col", "row"
