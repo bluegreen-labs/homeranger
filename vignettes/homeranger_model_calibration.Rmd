@@ -24,12 +24,16 @@ library(here)
 Depending on the format of your biologging data you should either read in the data from vector format (e.g. a shape file), or just a flat text file (csv, txt) with the `sf` package.
 
 ```{r echo = TRUE, message = FALSE, eval = FALSE}
-# reading in a text file
-track <- sf::st_as_sf()
+# reading in a text file with coordinate columns x_col and y_col
+# in lon/lat format
+track <- read.csv('file.csv') |>
+  sf::st_as_sf(
+    coords=c("x_col", "y_col"),
+    crs=4326
+  )
 
 # reading in a shape file
 track <- sf::st_read("your_track.shp")
-
 ```
 
 ### Getting additional (required) data
