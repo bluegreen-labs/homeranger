@@ -1,6 +1,6 @@
 Package: homeranger
 Title: A home range estimation framework
-Version: 0.1
+Version: 0.2
 Authors@R: c(
     person(
         family = "Ranc",
@@ -27,7 +27,9 @@ Imports:
     rlang,
     BayesianTools,
     terra,
+    units,
     tidyterra,
+    dplyr,
     sf,
     ggplot2,
     rstac
