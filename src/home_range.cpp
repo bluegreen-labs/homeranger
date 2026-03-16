@@ -306,6 +306,7 @@ List home_range_cpp(
 
     //return single likelihood (formerly calculated in
     // likelihood.cpp)
+    // !! now calculated externally
     //double objectiveFunction=0.0;
 
     //for(int i=0;i<Traj.likelihood.size();i++){
@@ -554,9 +555,9 @@ List home_range_cpp(
             }
           }
 
-
           // 3. Calculate random step
-          randNumber=drand48()*sum_weights;
+          //randNumber=drand48()*sum_weights;
+          randNumber=R::runif(0,1) * sum_weights;
           sumAttractionVectors=0;
 
           for(int r=minR;r<maxR;r++){
@@ -572,7 +573,6 @@ List home_range_cpp(
               }
             }
           }
-
 
           // 4. Write simulated point
           totalCount=totalCount+1;
