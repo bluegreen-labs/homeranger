@@ -4,7 +4,7 @@ library(terra)
 # read in the reference data, these are calculated with the
 # shared original code and provide the step based likelihoods
 # this output should match the output of the package for parity
-reference <- read.csv("data/validation/objective_function_detail.csv")
+reference <- read.csv("data-raw/validation/objective_function_detail.csv")
 reference$likelihood[reference$likelihood == -9999] <- NA
 
 # specify the parameters as used in the default run
@@ -39,7 +39,7 @@ params <- list(
 # based upon the order of the coefficients in the parameter
 # list - finally convert to 3D array to be passed to the
 # Cpp function
-r <- terra::rast(list.files("data/drivers/","*.asc", full.names = TRUE))
+r <- terra::rast(list.files("data-raw/drivers/","*.asc", full.names = TRUE))
 r <- as.array(subset(r, names(params$coef)))
 r[is.na(r)] <- 0
 
@@ -49,7 +49,9 @@ r[is.na(r)] <- 0
 output <- hr_predict(
   data = r,
   par = params,
-  obs = "data/Aspromonte_roedeer_traj.txt",
+  obs = "data-raw/tracks/Aspromonte_roedeer_traj.txt",
+  steps = 0,
+  runs = 0,
   resolution = 25,
   optimization = TRUE,
   verbose = TRUE
@@ -60,21 +62,40 @@ output$likelihood[output$likelihood == -9999] <- NA
 plot(output$likelihood, reference$likelihood)
 abline(0,1)
 
+set.seed(100)
+
 # run the model for these parameters in prediction
 # mode
 output <-
-  system.time(
     hr_predict(
     data = r,
     par = params,
-    obs = "data/Aspromonte_roedeer_traj.txt",
+    obs = "data-raw/tracks/Aspromonte_roedeer_traj.txt",
     resolution = 25,
-    steps = 10,
-    runs = 10,
-    optimization = TRUE,
+    steps = 3,
+    runs = 3,
+    optimization = FALSE,
     verbose = TRUE
   )
-)
+
+# print method for hr_predict class
+plot(output)
+
+set.seed(42)
+
+# run the model for these parameters in prediction
+# mode
+output <-
+  hr_predict(
+    data = r,
+    par = params,
+    obs = "data-raw/tracks/Aspromonte_roedeer_traj.txt",
+    resolution = 25,
+    steps = 3,
+    runs = 3,
+    optimization = FALSE,
+    verbose = TRUE
+  )
 
 # print method for hr_predict class
 plot(output)
