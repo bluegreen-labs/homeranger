@@ -1,7 +1,7 @@
 parameter;value
-output_directory;/tmp/
-raster_directory;./data/drivers/
-trajectory_path;./data/Aspromonte_roedeer_traj.txt
+output_directory;OUTPUT_DIR
+raster_directory;RASTER_DIR
+trajectory_path;PATH_DIR
 writing_outputs;true
 model_type;simulation
 threshold_approx_kernel;7000
