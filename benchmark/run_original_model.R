@@ -14,12 +14,18 @@ dir.create(bin_path, recursive = TRUE)
 files <- list.files("benchmark/src/", "*", full.names = TRUE)
 file.copy(files, bin_path, overwrite = TRUE)
 
-# set config to use
+# read config file
+# kernel fitting
 config_file <- "./data-raw/config/config_best_Mmem_fitting.txt"
+
+# model simulation
+#config_file <- "./data-raw/config/config_best_Mmem_simulation_1y.txt"
+
+# set config to use
 config <- read.delim(config_file, sep = ";", header = TRUE)
 
-# set parameters (set trailing /)
-config$value[1] <- here::here("benchmark/")
+# set parameters (use trailing for directories /)
+config$value[1] <- here::here("benchmark/output/")
 config$value[2] <- here::here("data-raw/drivers/")
 config$value[3] <- here::here("data-raw/tracks/Aspromonte_roedeer_traj.txt")
 
