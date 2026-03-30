@@ -35,6 +35,9 @@ vignettes/*.pdf
 *_cache/
 /cache/
 
+# benchmarking output
+/benchmark/output
+
 # Temporary files created by R markdown
 *.utf8.md
 *.knit.md
