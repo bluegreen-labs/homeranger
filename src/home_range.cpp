@@ -464,20 +464,23 @@ List home_range_cpp(
           }
 
           // 3. Calculate random step
-          randNumber=drand48()*sum_weights;
-          //randNumber=R::runif(0,1) * sum_weights;
-          sumAttractionVectors=0;
+          //randNumber=drand48()*sum_weights;
+          randNumber=R::runif(0,1) * sum_weights;
 
+          // reset value every time
+          sumAttractionVectors = 0;
+
+          // evaluate all positions
           for(int r=minR;r<maxR;r++){
             for(int c=minC;c<maxC;c++){
-              if(Arena.arrayAttractionWeight[r][c]>0){
-                if(randNumber>sumAttractionVectors){
-                  if(randNumber<=(sumAttractionVectors+Arena.arrayAttractionWeight[r][c])){
-                    nextCol=c;
-                    nextRow=r;
+              if(Arena.arrayAttractionWeight[r][c] > 0){
+                if(randNumber > sumAttractionVectors){
+                  if(randNumber <= (sumAttractionVectors + Arena.arrayAttractionWeight[r][c])){
+                    nextCol = c;
+                    nextRow = r;
                   }
                 }
-                sumAttractionVectors=sumAttractionVectors+Arena.arrayAttractionWeight[r][c];
+                sumAttractionVectors = sumAttractionVectors + Arena.arrayAttractionWeight[r][c];
               }
             }
           }
