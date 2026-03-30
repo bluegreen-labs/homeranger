@@ -175,265 +175,175 @@ List home_range_cpp(
   int nAnimals = TrajMetrics.animalId.size();
 
   // Start model run -----------------------------------------------------------
-
-  // Currently this is split in a kernel fitting routine and a simulation
-  // routine. Conceptually these are the same and for simplicity they should
-  // be merged in some way or shape
-
-  // Model fitting routine -----------------------------------------------------
-
   if(verbose){
     begin = std::chrono::high_resolution_clock::now();
+    if(optimization){
+      Rcout << "Optimization mode" << std::endl;
+    } else {
+      Rcout << "Simulation mode" << std::endl;
+    }
   }
 
-  if(optimization){
+  // initiate memory for the simulated trajectory
+  // make conditional?
+  structTrajectorySimul totalTraj;
+  totalTraj.animalId.reserve(TrajMetrics.totalLength+nAnimals*nSimulatedSteps*nSimulatedRuns);
+  totalTraj.run.reserve(TrajMetrics.totalLength+nAnimals*nSimulatedSteps*nSimulatedRuns);
+  totalTraj.col.reserve(TrajMetrics.totalLength+nAnimals*nSimulatedSteps*nSimulatedRuns);
+  totalTraj.row.reserve(TrajMetrics.totalLength+nAnimals*nSimulatedSteps*nSimulatedRuns);
 
-    rowCount=-1;
-    lagR=0;
-    lagC=0;
-    lagRmem=0;
-    lagCmem=0;
+  double sumAttractionVectors,randNumber;
+  int totalCount;
+  totalCount=-1;
+  rowCount=-1;
+  lagR=0;
+  lagC=0;
+  lagRmem=0;
+  lagCmem=0;
 
-    // START OF INDIVIDUAL LOOP
-    for(ind=0;ind<nAnimals;ind++)
-    {
-      // Re-initialization of the arena
-      // clearing reference and working memory
-      arena_renewal(Arena, 0, 0);
+  // START OF INDIVIDUAL LOOP
+  for(ind=0;ind<nAnimals;ind++){
 
-      // START OF RELOCATION ITERATIONS
-      // RELOCATION LOOP (from release to 2nd from last point)
-      for(ite=0;ite<TrajMetrics.individualCount[ind]-1;ite++)
-      {
-        rowCount=rowCount+1;
+    // Re-initialization of the arena
+    // clearing reference and working memory
+    arena_renewal(Arena, 0, 0);
 
-        currentCol=Traj.col[rowCount];
-        currentRow=Traj.row[rowCount];
-        nextCol=Traj.col[rowCount+1];
-        nextRow=Traj.row[rowCount+1];
+    // START OF RELOCATION ITERATIONS
+    // RELOCATION LOOP (from release to 2nd from last point)
+    for(ite=0;ite<TrajMetrics.individualCount[ind]-1;ite++){
 
+      rowCount=rowCount+1;
+
+      // simulation only
+      totalCount=totalCount+1;
+
+      currentCol=Traj.col[rowCount];
+      currentRow=Traj.row[rowCount];
+      nextCol=Traj.col[rowCount+1];
+      nextRow=Traj.row[rowCount+1];
+
+      if(optimization){
         minR=currentRow-stepLengthKernel.nCells;
         maxR=currentRow+stepLengthKernel.nCells+1;
         minC=currentCol-stepLengthKernel.nCells;
         maxC=currentCol+stepLengthKernel.nCells+1;
-        minRmem=currentRow-r_memoryKernel.nCells;
-        maxRmem=currentRow+r_memoryKernel.nCells+1;
-        minCmem=currentCol-r_memoryKernel.nCells;
-        maxCmem=currentCol+r_memoryKernel.nCells+1;
+      }
 
-        // 1. Memory dynamics
-        // At all cells within animal's bounding box...
-        for(int r=Traj.minRowMem[rowCount];r<=Traj.maxRowMem[rowCount];r++){
-          for(int c=Traj.minColMem[rowCount];c<=Traj.maxColMem[rowCount];c++){
-            //"full" memory decay
-            Arena.arrayMemoriesRef[r][c]=Arena.arrayMemoriesRef[r][c]*memoryRD_cplm;
-            Arena.arrayMemoriesWork[r][c]=Arena.arrayMemoriesWork[r][c]*memoryWD_cplm;
+      minRmem=currentRow-r_memoryKernel.nCells;
+      maxRmem=currentRow+r_memoryKernel.nCells+1;
+      minCmem=currentCol-r_memoryKernel.nCells;
+      maxCmem=currentCol+r_memoryKernel.nCells+1;
+
+      // simulation
+      // Corrections to make sure the kernels do not go beyond the study area
+      // from predictions NEW
+      if (!optimization){
+        lagRmem=0;
+        lagCmem=0;
+        if(minRmem<0){lagRmem=minRmem;minRmem=0;}
+        if(maxRmem>Arena.nRows){maxRmem=Arena.nRows;}
+        if(minCmem<0){lagCmem=minCmem;minCmem=0;}
+        if(maxCmem>Arena.nCols){maxCmem=Arena.nCols;}
+      }
+
+      // 1. Memory dynamics
+      // At all cells within animal's bounding box...
+      for(int r=Traj.minRowMem[rowCount];r<=Traj.maxRowMem[rowCount];r++){
+        for(int c=Traj.minColMem[rowCount];c<=Traj.maxColMem[rowCount];c++){
+          //"full" memory decay
+          Arena.arrayMemoriesRef[r][c]=Arena.arrayMemoriesRef[r][c]*memoryRD_cplm;
+          Arena.arrayMemoriesWork[r][c]=Arena.arrayMemoriesWork[r][c]*memoryWD_cplm;
+        }
+      }
+
+      // If current timestep has valid coordinates
+      if(currentCol!=-9999){
+        // At cells within neighborhood...
+        for(int r=minRmem;r<maxRmem;r++){
+
+          if(!optimization){
+            looktableR=r-minRmem-lagRmem;
+          } else {
+            looktableR=r-minRmem;
+          }
+
+          for(int c=minCmem;c<maxCmem;c++){
+
+            if(!optimization){
+              looktableC=c-minCmem-lagCmem;
+            } else {
+              looktableC=c-minCmem;
+            }
+
+            weightR=r_memoryKernel.vals[looktableR][looktableC];
+            weightW=w_memoryKernel.vals[looktableR][looktableC];
+
+            // reverse "full decay"
+            Arena.arrayMemoriesRef[r][c]=Arena.arrayMemoriesRef[r][c]/memoryRD_cplm;
+            Arena.arrayMemoriesWork[r][c]=Arena.arrayMemoriesWork[r][c]/memoryWD_cplm;
+
+            Arena.arrayMemoriesRef[r][c]=Arena.arrayMemoriesRef[r][c]-
+              (1-weightR)*Arena.arrayMemoriesRef[r][c]*memoryRD[0]+
+              weightR*memoryRL[0];
+
+            Arena.arrayMemoriesWork[r][c]=Arena.arrayMemoriesWork[r][c]-
+              (1-weightW)*Arena.arrayMemoriesWork[r][c]*memoryWD[0]+
+              weightW*memoryWL[0];
           }
         }
 
-        if(currentCol!=-9999)      // If current timestep has valid coordinates
-        {
-          for(int r=minRmem;r<maxRmem;r++)      // At cells within neighborhood...
-          {
-            looktableR=r-minRmem;
-
-            for(int c=minCmem;c<maxCmem;c++)
-            {
-              looktableC=c-minCmem;
-              weightR=r_memoryKernel.vals[looktableR][looktableC];
-              weightW=w_memoryKernel.vals[looktableR][looktableC];
-
-              // reverse "full decay"
-              Arena.arrayMemoriesRef[r][c]=Arena.arrayMemoriesRef[r][c]/memoryRD_cplm;
-              Arena.arrayMemoriesWork[r][c]=Arena.arrayMemoriesWork[r][c]/memoryWD_cplm;
-
-              Arena.arrayMemoriesRef[r][c]=Arena.arrayMemoriesRef[r][c]-
-                (1-weightR)*Arena.arrayMemoriesRef[r][c]*memoryRD[0]+
-                weightR*memoryRL[0];
-
-              Arena.arrayMemoriesWork[r][c]=Arena.arrayMemoriesWork[r][c]-
-                (1-weightW)*Arena.arrayMemoriesWork[r][c]*memoryWD[0]+
-                weightW*memoryWL[0];
-            }
-          }
-
-          if(nextCol!=-9999) // If next timestep has valid coordinates
-          {
+        // If next timestep has valid coordinates
+        // seems to be optimization only, check redundancy with
+        // kernel check above
+        if(optimization){
+          if(nextCol!=-9999){
             // 2. Calculate movement probability
             sum_weights=0.0;
-            for(int r=minR;r<maxR;r++)
-            {
+            for(int r=minR;r<maxR;r++){
               looktableR=r-minR;
 
-              for(int c=minC;c<maxC;c++)
-              {
+              for(int c=minC;c<maxC;c++){
                 looktableC=c-minC;
-
                 familiarity=Arena.arrayMemoriesRef[r][c] - Arena.arrayMemoriesWork[r][c];
-
                 Arena.arrayAttractionWeight[r][c]=stepLengthKernel.vals[looktableR][looktableC]*
                   (Arena.arrayResourceSelection[r][c]*(familiarity + 1));
-
                 sum_weights = sum_weights + Arena.arrayAttractionWeight[r][c];
               }
             }
 
             // 3. Calculate step likelihood
-            if(sum_weights>0)
-            {
+            if(sum_weights>0){
               Traj.likelihood[rowCount]=log(Arena.arrayAttractionWeight[nextRow][nextCol]/sum_weights);
-            }
-            else
-            {
+            } else {
               Traj.likelihood[rowCount]=log(Arena.arrayAttractionWeight[nextRow][nextCol]);
             }
-          }
-        }
+          } // nextCol section
+        } // only during optimization (if clause)
+
+      } // currentCol section
+
+      if(!optimization){
+        // 3. Update total trajectory
+        totalTraj.animalId.push_back(TrajMetrics.animalId[ind]);
+        totalTraj.run.push_back(0);
+        totalTraj.col.push_back(currentCol);
+        totalTraj.row.push_back(currentRow);
       }
 
-      rowCount=rowCount+1;
-    }
+    }  // individual
 
-    if(verbose){
-      end = std::chrono::high_resolution_clock::now();
-      dur = end - begin;
-      ms = std::chrono::duration_cast<std::chrono::milliseconds>(dur).count();
+    rowCount=rowCount+1;
 
-      time_t endTime = time(0);
-      Rcout << "gros calculs, run time: "<< ms << " ms" << std::endl;
-      Rcout << "MODEL FITTING ENDS, run time: "<< endTime-iniTime << " seconds" << endl;
-    }
-
-    //return single likelihood (formerly calculated in
-    // likelihood.cpp)
-    // !! now calculated externally
-    //double objectiveFunction=0.0;
-
-    //for(int i=0;i<Traj.likelihood.size();i++){
-    //  // only count values which are not NA or -9999
-    //  if(Traj.likelihood[i] != -9999){
-    //    objectiveFunction=objectiveFunction + Traj.likelihood[i];
-    //  }
-    //}
-
-    // cleanup data frames
-    // this avoids runaway memory use on iterations which is
-    // especially important during optimization
-    // (e.g. ~5GB and climbing for 300 its while constant at about
-    // 1.5GB with cleanup)
-    arena_cleanup(Arena);
-    lookuptable_cleanup(stepLengthKernel);
-    lookuptable_cleanup(r_memoryKernel);
-    lookuptable_cleanup(w_memoryKernel);
-
-    // return an R list; this is achieved
-    // through an implicit call to Rcpp::wrap
-    return List::create(
-      _["likelihood"] = Traj.likelihood //,
-      //_["cost"] = objectiveFunction
-    );
-  }
-
-  // Model prediction routine --------------------------------------------------
-
-  if(!optimization){
-
-    structTrajectorySimul totalTraj;
-    totalTraj.animalId.reserve(TrajMetrics.totalLength+nAnimals*nSimulatedSteps*nSimulatedRuns);
-    totalTraj.run.reserve(TrajMetrics.totalLength+nAnimals*nSimulatedSteps*nSimulatedRuns);
-    totalTraj.col.reserve(TrajMetrics.totalLength+nAnimals*nSimulatedSteps*nSimulatedRuns);
-    totalTraj.row.reserve(TrajMetrics.totalLength+nAnimals*nSimulatedSteps*nSimulatedRuns);
-
-    double sumAttractionVectors,randNumber;
-    lagR=0;lagC=0;lagRmem=0;lagCmem=0;
-    int totalCount;
-    rowCount=-1;
-    totalCount=-1;
-
-    // START OF INDIVIDUAL LOOP
-    for(ind=0;ind<nAnimals;ind++)
-    {
-      // Re-initialization of the arena
-      arena_renewal(Arena, focusPatchX, focusPatchY);
-
-
-      // PART 1: UPDATE PRIOR MEMORY!
-      if(TrajMetrics.individualCount[ind]>1)
-      {
-        for(ite=0;ite<TrajMetrics.individualCount[ind]-1;ite++)         // START OF RELOCATION ITERATIONS
-        {
-          rowCount=rowCount+1;
-          totalCount=totalCount+1;
-          currentCol=Traj.col[rowCount];
-          currentRow=Traj.row[rowCount];
-          minRmem=currentRow-r_memoryKernel.nCells;
-          maxRmem=currentRow+r_memoryKernel.nCells+1;
-          minCmem=currentCol-r_memoryKernel.nCells;
-          maxCmem=currentCol+r_memoryKernel.nCells+1;
-
-          // Corrections to make sure the kernels do not go beyond the study area
-          lagRmem=0;lagCmem=0;
-          if(minRmem<0){lagRmem=minRmem;minRmem=0;}
-          if(maxRmem>Arena.nRows){maxRmem=Arena.nRows;}
-          if(minCmem<0){lagCmem=minCmem;minCmem=0;}
-          if(maxCmem>Arena.nCols){maxCmem=Arena.nCols;}
-
-
-          // 1. Memory dynamics
-          // At all cells within animal's bounding box...
-          for(int r=Traj.minRowMem[rowCount];r<=Traj.maxRowMem[rowCount];r++){
-            for(int c=Traj.minColMem[rowCount];c<=Traj.maxColMem[rowCount];c++){
-              //"full" memory decay
-              Arena.arrayMemoriesRef[r][c]=Arena.arrayMemoriesRef[r][c]*memoryRD_cplm;
-              Arena.arrayMemoriesWork[r][c]=Arena.arrayMemoriesWork[r][c]*memoryWD_cplm;
-            }
-          }
-
-          if(currentCol!=-9999){
-            // At cells within neighborhood...
-            for(int r=minRmem;r<maxRmem;r++){
-              // looktableR=r-minRmem;
-              looktableR=r-minRmem-lagRmem;
-
-              for(int c=minCmem;c<maxCmem;c++){
-                looktableC=c-minCmem-lagCmem;
-                // looktableC=c-minCmem;
-
-                weightR=r_memoryKernel.vals[looktableR][looktableC];
-                weightW=w_memoryKernel.vals[looktableR][looktableC];
-
-                Arena.arrayMemoriesRef[r][c]=Arena.arrayMemoriesRef[r][c]/memoryRD_cplm;
-                Arena.arrayMemoriesWork[r][c]=Arena.arrayMemoriesWork[r][c]/memoryWD_cplm;
-
-                Arena.arrayMemoriesRef[r][c]=Arena.arrayMemoriesRef[r][c]-
-                  (1-weightR)*Arena.arrayMemoriesRef[r][c]*memoryRD[0]+
-                  weightR*memoryRL[0];
-
-                Arena.arrayMemoriesWork[r][c]=Arena.arrayMemoriesWork[r][c]-
-                  (1-weightW)*Arena.arrayMemoriesWork[r][c]*memoryWD[0]+
-                  weightW*memoryWL[0];
-              }
-            }
-          }
-
-          // 3. Update total trajectory
-          totalTraj.animalId.push_back(TrajMetrics.animalId[ind]);
-          totalTraj.run.push_back(0);
-          totalTraj.col.push_back(currentCol);
-          totalTraj.row.push_back(currentRow);
-        }
-      }
-
-
+    if(!optimization){
       // PART 2: SIMULATIONS!
-      rowCount=rowCount+1;
+      //rowCount=rowCount+1;
       totalCount=totalCount+1;
       totalTraj.animalId.push_back(TrajMetrics.animalId[ind]);
       totalTraj.run.push_back(0);
       totalTraj.col.push_back(Traj.col[rowCount]);
       totalTraj.row.push_back(Traj.row[rowCount]);
 
-      // Save info for re-initilizing runs
+      // Save info for re-initializing runs
       releaseCol=totalTraj.col[totalCount];
       releaseRow=totalTraj.row[totalCount];
       double** memoriesRefIni;
@@ -441,10 +351,8 @@ List home_range_cpp(
       initialize2D_call(memoriesRefIni,Arena.nRows,Arena.nCols);
       initialize2D_call(memoriesWorkIni,Arena.nRows,Arena.nCols);
 
-      for(int r=0;r<Arena.nRows;r++)
-      {
-        for(int c=0;c<Arena.nCols;c++)
-        {
+      for(int r=0;r<Arena.nRows;r++){
+        for(int c=0;c<Arena.nCols;c++){
           memoriesRefIni[r][c]=Arena.arrayMemoriesRef[r][c];
           memoriesWorkIni[r][c]=Arena.arrayMemoriesWork[r][c];
         }
@@ -556,8 +464,8 @@ List home_range_cpp(
           }
 
           // 3. Calculate random step
-          //randNumber=drand48()*sum_weights;
-          randNumber=R::runif(0,1) * sum_weights;
+          randNumber=drand48()*sum_weights;
+          //randNumber=R::runif(0,1) * sum_weights;
           sumAttractionVectors=0;
 
           for(int r=minR;r<maxR;r++){
@@ -585,6 +493,18 @@ List home_range_cpp(
       }
     }
 
+  } // number of animals loop
+
+  // cleanup data frames
+  // this avoids runaway memory use on iterations which is
+  // especially important during optimization
+  // (e.g. ~5GB and climbing for 300 its while constant at about
+  // 1.5GB with cleanup)
+  arena_cleanup(Arena);
+  lookuptable_cleanup(stepLengthKernel);
+  lookuptable_cleanup(r_memoryKernel);
+  lookuptable_cleanup(w_memoryKernel);
+
   if(verbose){
     end = std::chrono::high_resolution_clock::now();
     dur = end - begin;
@@ -595,25 +515,21 @@ List home_range_cpp(
     Rcout << "MODEL RUN ENDS, run time: "<< endTime-iniTime << " seconds" << endl;
   }
 
-  // cleanup data frames
-  arena_cleanup(Arena);
-  lookuptable_cleanup(stepLengthKernel);
-  lookuptable_cleanup(r_memoryKernel);
-  lookuptable_cleanup(w_memoryKernel);
-
-  return List::create(
-    _["locations"] = DataFrame::create(
-      _["ID"] = totalTraj.animalId,
-      _["run"] = totalTraj.run,
-      _["col"] = totalTraj.col,
-      _["row"] = totalTraj.row
+  // split output
+  if(optimization){
+    return List::create(
+      _["likelihood"] = Traj.likelihood
+    );
+  } else {
+    return List::create(
+      _["locations"] = DataFrame::create(
+        _["ID"] = totalTraj.animalId,
+        _["run"] = totalTraj.run,
+        _["col"] = totalTraj.col,
+        _["row"] = totalTraj.row
       ),
       _["resources"] = ListMatrix::create(res)
     );
   }
 
-  // empty return to not trigger
-  // warning: control reaches end of non-void function [-Wreturn-type]
-  // reconsider context switching!
-  return List::create(_["NULL"] = NULL);
 }
