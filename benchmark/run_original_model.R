@@ -16,10 +16,10 @@ file.copy(files, bin_path, overwrite = TRUE)
 
 # read config file
 # kernel fitting
-config_file <- "./data-raw/config/config_best_Mmem_fitting.txt"
+#config_file <- "./data-raw/config/config_best_Mmem_fitting.txt"
 
 # model simulation
-#config_file <- "./data-raw/config/config_best_Mmem_simulation_1y.txt"
+config_file <- "./data-raw/config/config_best_Mmem_simulation_1y.txt"
 
 # set config to use
 config <- read.delim(config_file, sep = ";", header = TRUE)
@@ -57,3 +57,30 @@ system(
     bin_path
   )
 )
+
+# if it is a simulation plot the results
+if(config$value[4] == "true"){
+  library(ggplot2)
+  library(terra)
+  library(tidyterra)
+
+  r <- terra::rast("benchmark/output/global_resource.asc") # needs 25 multiplier
+  track <- read.csv("benchmark/output/simulations.csv") |>
+    filter(r_patch != -9999)
+
+  p <- ggplot() +
+    geom_spatraster(data = r) +
+    geom_point(
+      data = track,
+      aes(
+        x = c_patch * 25,
+        y = r_patch * 25,
+        colour = as.factor(animal_id)
+      )
+    )
+
+  plot(p)
+}
+
+
+
