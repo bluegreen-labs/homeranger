@@ -1,6 +1,6 @@
 Package: homeranger
 Title: A home range estimation framework
-Version: 0.2
+Version: 0.3
 Authors@R: c(
     person(
         family = "Ranc",

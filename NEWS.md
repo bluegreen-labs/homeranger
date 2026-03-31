@@ -1,3 +1,9 @@
+## homeranger v0.3
+
+- integrating both kernel estimation and simulation modes
+- setting an R compatible random number generator
+- adding additional benchmark functionality (not integrated into package formally only on github)
+
 ## homeranger v0.2
 
 - adding data download function `hr_raster_maps()`
