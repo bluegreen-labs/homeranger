@@ -72,8 +72,8 @@ output <-
     par = params,
     obs = "data-raw/tracks/Aspromonte_roedeer_traj.txt",
     resolution = 25,
-    steps = 3,
-    runs = 3,
+    steps = 1460,
+    runs = 2,
     optimization = FALSE,
     verbose = TRUE
   )
@@ -91,8 +91,8 @@ output <-
     par = params,
     obs = "data-raw/tracks/Aspromonte_roedeer_traj.txt",
     resolution = 25,
-    steps = 3,
-    runs = 3,
+    steps = 1460,
+    runs = 2,
     optimization = FALSE,
     verbose = TRUE
   )
