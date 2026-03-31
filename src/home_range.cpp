@@ -37,7 +37,6 @@ List home_range_cpp(
 {
 
   // Environment setup ---------------------------------------------------------
-
   time_t iniTime = time(0);
 
   // define local variables
