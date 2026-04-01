@@ -45,3 +45,17 @@ par_relist <- function(par, names){
   names(l) <- c(names[!grepl("coef", names)],"coef")
   return(l)
 }
+
+#' z-score
+#'
+#' Scale and center the data of a continuous map using a z-score.
+#'
+#' @param r terra raster with a single layer
+#'
+#' @returns a z-score normalized map using the global mean and sd
+#' @export
+
+z_score <- function(r){
+  g_stats <- terra::global(r, fun = c("mean", "sd"), na.rm=TRUE)
+  z_score <- (r - g_stats$mean) /g_stats$sd
+}
