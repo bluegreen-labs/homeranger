@@ -4,12 +4,14 @@
 \alias{hr_regularize}
 \title{Regularize spatial input data}
 \usage{
-hr_regularize(data, obs, crs = "EPSG:3035")
+hr_regularize(dem, lc, track, crs = "EPSG:3035")
 }
 \arguments{
-\item{data}{raster stack with geospatial input data}
+\item{dem}{DEM terra raster}
 
-\item{obs}{observed locations track}
+\item{lc}{land cover map (ESA world cover)}
+
+\item{track}{observed locations track}
 
 \item{crs}{an equal area CRS projection reference (default = EPSG:3035,
 or extended LAEA Europe)}
@@ -20,6 +22,7 @@ the used projection crs
 }
 \description{
 Regularizes spatial input data to a common equal area grid. It also performs
-sanity checks on the inputs to check if observations cover the spatial grid
-and returns the
+sanity checks on the inputs to check if observations cover the spatial grid.
+Data can be provided as arguments, or if no inputs are provided the data will
+be downloaded in the background.
 }

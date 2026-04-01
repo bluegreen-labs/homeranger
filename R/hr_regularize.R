@@ -1,11 +1,13 @@
 #' Regularize spatial input data
 #'
 #' Regularizes spatial input data to a common equal area grid. It also performs
-#' sanity checks on the inputs to check if observations cover the spatial grid
-#' and returns the
+#' sanity checks on the inputs to check if observations cover the spatial grid.
+#' Data can be provided as arguments, or if no inputs are provided the data will
+#' be downloaded in the background.
 #'
-#' @param data raster stack with geospatial input data
-#' @param obs observed locations track
+#' @param dem DEM terra raster
+#' @param lc land cover map (ESA world cover)
+#' @param track observed locations track
 #' @param crs an equal area CRS projection reference (default = EPSG:3035,
 #'  or extended LAEA Europe)
 #'
@@ -14,48 +16,61 @@
 #' @export
 
 hr_regularize <- function(
-    data,
-    obs,
+    dem,
+    lc,
+    track,
     crs = "EPSG:3035"
 ){
 
+  if(missing(track)){
+    stop("missing region of interest")
+  }
 
-  # rstac download
-  # dem <- rstac_download(bbox)
-  # lc <- rstac_download(bbox)
-  # slope <- sf::gdal_utils()
+  # download the data on the fly if data input is missing
+  if(missing(dem) & missing(lc)){
+    warning("Missing matching DEM and Land Cover data - downloading data")
 
-  # resample to common resolution and combine
-  # cube <- terra::rast(c(slope, slope^2, forest_cover_325m, forest_cover))
+    # download the data into the temporary directory
+    hr_dl_maps(track, path = tempdir(), overwrite = TRUE)
 
-  # extract locations of gps points from the cube
-  # coords <- extract(track, cube, xy = TRUE)
+    # read the data
+    dem <- terra::rast(file.path(tempdir(), "DEM.tif"))
+    lc <- terra::rast(file.path(tempdir(), "LC.tif"))
+  }
 
-  # drop referencing information save externally
-  #geo <- get_geo(cube)
-  #cube_final <- drop_geo(cube)
+  # reproject to equal area
+  dem <- terra::project(dem, crs = crs, method = "bilinear")
+  lc <- terra::project(lc, crs = crs, method = "mean")
 
-  # return(cube_final, coords, geo)
+  # resample dem (30m) to lc grid (10m)
+  dem <- terra::resample(dem, lc, method = "bilinear")
 
-  # reproject the data and observations to an equal area setup
-  # and a common grid
+  # Process DEM data
+  slope <- dem |>
+    terra::terrain(v = "slope") |>
+    terra::crop(track_bbox)
+  slope_sq <- slope^2
 
-  # validate input data
+  # Process Land Cover data
+  # crop data
+  lc <- lc |>
+    terra::crop(track_bbox)
 
-  # - check if all observations cover the grid layout
-  # - subset layers to specified ones in parameters
-  # - error when not all layers / names are there
-  # - extract resolution from data geospatial information (double?)
+  # split out mask
+  m <- (lc >= 60 | lc <= 80)
 
-  # subset the input data to conform to the
-  # provided names of layers in the parameters
-  #data_subset <- subset(data, par$names)
+  # filter out the forest data
+  forest <- (lc == 10)
 
-  # retain the extent and projection details of the underlying
-  # grid setup
+  # agriculture
+  ag <- (lc == 40 | lc == 30)
 
-  # extract the cell values (XY) of the observations relative
-  # to the underlying grid
+  # regrowth/reforested (shrubland)
+  shrub <- lc == 20
+
+  # output raster
+  test <- c(slope, slope_sq, forest, ag, shrub)
+
 
 
 }

@@ -1,3 +1,7 @@
+## homeranger v0.4
+
+- implement raster regularization
+
 ## homeranger v0.3
 
 - integrating both kernel estimation and simulation modes

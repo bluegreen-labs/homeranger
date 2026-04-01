@@ -16,7 +16,7 @@
 #' @param track biologging track with coordinates in lat lon (sf object)
 #' @param settings downloads settings, data frame specifying data
 #'  products and their target year and assets on the planetary computer STAC
-#' @param buffer buffer (in km, default = 20) around the biologging track file
+#' @param buffer buffer (in km, default = 20) around the bio-logging track file
 #'  to accommodate for a sufficiently large home range area. Value should be
 #'  adjusted to the target species.
 #' @param path output path
@@ -27,7 +27,7 @@
 #' @import rstac
 #' @import units
 
-hr_raster_maps <- function(
+hr_dl_maps <- function(
     track,
     settings = data.frame(
       collection = c("esa-worldcover", "cop-dem-glo-30"),
@@ -37,7 +37,7 @@ hr_raster_maps <- function(
     ),
     buffer = 20,
     path = tempdir(),
-    overwrite = FALSE
+    overwrite = TRUE
 ){
 
   # calculate bounding box around track
@@ -110,15 +110,24 @@ hr_raster_maps <- function(
     )
 
     # list downloaded files
-    image_file <- list.files(
+    image_files <- list.files(
       tmp_dir,
       "*.tif",
       recursive = TRUE,
       full.names = TRUE
     )
 
-    # read in the image file
-    r <- terra::rast(image_file)
+    # merge data if the returned data
+    # contains more than one file
+    if(length(image_files) > 1){
+      r_l <- lapply(image_files, terra::rast) |> terra::sprc()
+      r <- terra::merge(r_l)
+    } else {
+      # read in the image file
+      r <- terra::rast(image_files)
+    }
+
+    # crop data to size
     r <- terra::crop(r, track_bbox)
 
     # write to file, ignore warnings
@@ -131,7 +140,10 @@ hr_raster_maps <- function(
     )
 
     # delete temporary files
-    file.remove(image_file)
+    #file.remove(image_files)
     }
   )
+
+  # invisible output
+  invisible()
 }
