@@ -15,3 +15,8 @@ track_bbox <- track |>
   sf::st_as_sfc() |>
   sf::st_buffer(dist = units::as_units(20,"km"))
 
+source("R/helpers.R")
+source("R/hr_regularize.R")
+source("R/hr_dl_maps.R")
+
+test <- hr_regularize(track = track_bbox)
