@@ -45,7 +45,7 @@ hr_dl_maps <- function(
     sf::st_transform(4326) |>
     sf::st_bbox() |>
     sf::st_as_sfc() |>
-    sf::st_buffer(dist = units::as_units(20,"km"))
+    sf::st_buffer(dist = units::as_units(buffer,"km"))
 
   # set the stac source
   stac_source <- rstac::stac(
