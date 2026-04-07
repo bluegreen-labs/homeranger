@@ -9,7 +9,7 @@
 #'
 #' @param map a \{terra\} raster map (stack)
 #' @param track an \{sf\} multi-point file
-#' @param crs a valid CRS description (default = "+proj=longlat +datum=WGS84")
+#' @param method exact or approximate location conversions (default = "exact")
 #'
 #' @returns a nested list containing a converted map array and a list of
 #'  coordinates for the provided track points relative to this array.
@@ -17,35 +17,57 @@
 
 hr_xy <- function(
     map,
-    track = NULL,
-    crs = "+proj=longlat +datum=WGS84"
+    track,
+    method = "exact"
   ){
 
-  # reproject to equal area locations
-  map <- terra::project(map, crs)
+  if(missing(map)){
+    cli::cli_abort("Missing map data")
+  }
 
-  if(!is.null(track)){
-    track <- track |>
-      sf::st_transform(crs) |>
-      terra::vect()
+  if(missing(track)){
+    cli::cli_abort("Missing track data")
+  }
+
+  track <- track |>
+    sf::st_transform(terra::crs(map, proj = TRUE))
+
+  cli::cli_alert("Extracting XY coordinates from sf track object")
+  if (method == "exact"){
+
+    # extract resolution from map meta-data
+    res <- terra::res(map)
 
     # extract XY coordinates
     p <- terra::extract(map, track, xy = TRUE) |>
       dplyr::mutate(
-        col = terra::colFromX(map, .data$x),
-        row = terra::rowFromY(map, .data$y)
+        animal_id = track$animals_id,
+        x = floor(terra::colFromX(map, .data$x) * res),
+        y = floor(terra::rowFromY(map, .data$y) * res)
       ) |>
       dplyr::select(
-        "col", "row"
+        "animal_id",
+        "x",
+        "y"
       )
   } else {
-    p <- NULL
+    coords <- track |>
+      sf::st_coordinates() |>
+      as.data.frame()
+
+    p <- data.frame(
+      animals_id = track$animals_id,
+      x = as.integer(coords$X) - as.integer(terra::ext(map)$xmin),
+      y = as.integer(coords$Y) - as.integer(terra::ext(map)$ymin)
+    )
   }
 
-  # convert to array
-  r <- as.array(r)
-  r[is.na(r)] <- 0
+  print(head(p))
 
-  # return nested list of data
-  list(raster = r, coordinates = p)
+  # write to file
+  filename <- file.path(tempdir(), "track.txt")
+  write.csv(p, file = filename, row.names = FALSE)
+
+  # return list of coordinates
+  return(filename)
 }
