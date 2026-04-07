@@ -13,7 +13,7 @@
 #' STAC product collection name, the required year and the asset (subset)
 #' required.
 #'
-#' @param track biologging track with coordinates in lat lon (sf object)
+#' @param track bio-logging track with coordinates in lat lon (sf object)
 #' @param settings downloads settings, data frame specifying data
 #'  products and their target year and assets on the planetary computer STAC
 #' @param buffer buffer (in km, default = 20) around the bio-logging track file
@@ -21,6 +21,8 @@
 #'  adjusted to the target species.
 #' @param path output path
 #' @param overwrite overwrite / and re-download the data
+#' @param progress show download progress bar (as feedback on large downloads,
+#'  default = FALSE)
 #'
 #' @return raster maps covering your area of interest as geotiff
 #' @export
@@ -37,7 +39,8 @@ hr_dl_maps <- function(
     ),
     buffer = 20,
     path = tempdir(),
-    overwrite = TRUE
+    overwrite = TRUE,
+    progress = FALSE
 ){
 
   # calculate bounding box around track
@@ -61,7 +64,7 @@ hr_dl_maps <- function(
   available_collections <- lapply(
     rstac::get_request(collections_query)$collections,
     \(x) x$id
-  ) |>
+    ) |>
     do.call(what = rbind)
 
   # check if both requested collations are in the STAC
@@ -106,7 +109,7 @@ hr_dl_maps <- function(
       s["asset"],
       output_dir = tmp_dir,
       overwrite = TRUE,
-      progress = TRUE
+      progress = progress
     )
 
     # list downloaded files
