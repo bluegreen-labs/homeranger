@@ -4,14 +4,14 @@
 \alias{hr_xy}
 \title{Convert map / track records to col/row (X/Y) coordinates}
 \usage{
-hr_xy(map, track = NULL, crs = "+proj=longlat +datum=WGS84")
+hr_xy(map, track, method = "exact")
 }
 \arguments{
 \item{map}{a \{terra\} raster map (stack)}
 
 \item{track}{an \{sf\} multi-point file}
 
-\item{crs}{a valid CRS description (default = "+proj=longlat +datum=WGS84")}
+\item{method}{exact or approximate location conversions (default = "exact")}
 }
 \value{
 a nested list containing a converted map array and a list of
