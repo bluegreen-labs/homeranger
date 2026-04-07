@@ -4,7 +4,15 @@
 \alias{hr_fit}
 \title{Fit a home range model}
 \usage{
-hr_fit(drivers, obs, settings, optim_out = TRUE, parallel = FALSE, ...)
+hr_fit(
+  drivers,
+  obs,
+  settings,
+  resolution,
+  optim_out = TRUE,
+  parallel = FALSE,
+  ...
+)
 }
 \arguments{
 \item{drivers}{A data frame with driver data.}
@@ -12,6 +20,8 @@ hr_fit(drivers, obs, settings, optim_out = TRUE, parallel = FALSE, ...)
 \item{obs}{sf object of the biologging track}
 
 \item{settings}{A list containing model calibration settings.}
+
+\item{resolution}{resolution of the underlying maps (grid)}
 
 \item{optim_out}{A logical indicating whether the function returns the raw
 output of the optimization functions (defaults to TRUE).}

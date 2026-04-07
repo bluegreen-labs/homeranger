@@ -9,6 +9,7 @@
 #' @param par parameters
 #' @param obs reference observations
 #' @param data driver matrix
+#' @param resolution resolution of the underlying driver data
 #' @param names names of the parameters
 #'
 #' @returns log likelihood values given a data and parameter set
@@ -18,6 +19,7 @@ hr_cost <- function(
     par,
     obs,
     data,
+    resolution,
     names
 ){
 
@@ -30,7 +32,7 @@ hr_cost <- function(
     data = data,
     par = par_ref,
     trajectoryPath = obs,
-    resolution = 25,
+    resolution = resolution,
     nSimulatedSteps = 0,
     nSimulatedRuns = 0,
     optimization = TRUE,

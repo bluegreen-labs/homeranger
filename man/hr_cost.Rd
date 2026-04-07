@@ -4,7 +4,7 @@
 \alias{hr_cost}
 \title{Optimization cost function}
 \usage{
-hr_cost(par, obs, data, names)
+hr_cost(par, obs, data, resolution, names)
 }
 \arguments{
 \item{par}{parameters}
@@ -12,6 +12,8 @@ hr_cost(par, obs, data, names)
 \item{obs}{reference observations}
 
 \item{data}{driver matrix}
+
+\item{resolution}{resolution of the underlying driver data}
 
 \item{names}{names of the parameters}
 }

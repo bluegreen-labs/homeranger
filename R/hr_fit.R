@@ -5,12 +5,12 @@
 #' through hr_cost().
 #'
 #' @param drivers A data frame with driver data.
-#' @param obs A data frame containing observational data used for model
-#'  calibration.
+#' @param obs sf object of the biologging track
 #' @param settings A list containing model calibration settings.
 #' @param optim_out A logical indicating whether the function returns the raw
 #'  output of the optimization functions (defaults to TRUE).
 #' @param parallel support parallel processing
+#' @param resolution resolution of the underlying maps (grid)
 #' @param ... Optional arguments passed on to the cost function specified as
 #'  \code{settings$metric}.
 #' @return A named list containing the calibrated parameter vector `par` and
@@ -24,28 +24,29 @@ hr_fit <- function(
     drivers,
     obs,
     settings,
+    resolution,
     optim_out = TRUE,
     parallel = FALSE,
     ...
 ){
+
   # predefine variables for CRAN check compliance
   lower <- upper <- out_optim <- NULL
 
   # check input variables
   if(missing(obs) | missing(drivers) | missing(settings)){
-    stop("missing input arguments, please check all parameters")
+    cli::cli_abort("missing input arguments, please check all parameters")
   }
 
-  # check data structure
-  # if(is.data.frame(obs)){
-  #   if (nrow(obs) == 0){
-  #     warning("no validation data available, returning NA parameters")
-  #     return(lapply(settings$par,
-  #                   function(x) NA))
-  #   }
-  # }else{
-  #   stop("obs must be a (nested) data.frame")
-  # }
+  # extract xy coordinates based upon geo-referenced data for both
+  # observations and raster maps - also return raster array
+  # input data (sorted based upon provided settings / coefficients)
+  cli::cli_alert_info("Create reference track")
+  obs_loc <- hr_xy(drivers, obs)
+
+  # convert geotiff to array
+  cli::cli_alert_info("Convert referenced data to data arrays")
+  drivers_arr <- terra::as.array(drivers)
 
   # convert to standard cost function naming
   # cost <- eval(settings$metric)
@@ -75,8 +76,9 @@ hr_fit <- function(
       do.call("cost",
               list(
                 par = random_par,
-                obs = obs,
-                drivers = drivers,
+                obs = obs_loc,
+                drivers = drivers_arr,
+                resolution = resolution,
                 names = rownames(pars)
               ))
     },
@@ -89,6 +91,7 @@ hr_fit <- function(
   bt_settings <- settings$control$settings
 
   # calculate the runs
+  cli::cli_alert_info("Fitting parameters...")
   out <- BayesianTools::runMCMC(
     bayesianSetup = setup,
     sampler = settings$control$sampler,
@@ -98,14 +101,24 @@ hr_fit <- function(
   # drop last value
   bt_par <- BayesianTools::MAP(out)$parametersMAP
   bt_par <- bt_par[1:(length(bt_par))]
+
+  # calculate driver hash
+  h <- rlang::hash(drivers)
+
   if(optim_out){
-    out_optim <- list(par = bt_par, mod = out)
+    out_optim <- list(
+      par = bt_par,
+      mod = out,
+      hash = h
+    )
   }else{
-    out_optim <- list(par = bt_par)
+    out_optim <- list(
+      par = bt_par,
+      hash = h
+    )
   }
 
-  print(out_optim$par)
+  #print(out_optim$par)
   #names(out_optim$par) <- rownames(pars)
-
   return(out_optim)
 }
