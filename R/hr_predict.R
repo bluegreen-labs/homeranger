@@ -23,9 +23,6 @@ hr_predict <- function(
   verbose = TRUE
 ){
 
-  # regularize the data
-  # hr_regularize()
-
   # remove coef names (only needed for regularization)
   # saves time as complex Rcpp/arma vector types are time expensive
   par$names <- NULL
