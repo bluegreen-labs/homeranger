@@ -1,18 +1,24 @@
-#' Regularize spatial input data
+#' Download and regularize spatial data for model input
 #'
 #' Regularizes spatial input data to a common equal area grid. It also performs
 #' sanity checks on the inputs to check if observations cover the spatial grid.
 #' Data can be provided as arguments, or if no inputs are provided the data will
 #' be downloaded in the background.
 #'
-#' @param dem DEM terra raster
-#' @param lc land cover map (ESA world cover)
+#' It is encouraged to save the data to file, rather than use a returned object.
+#' This limits the memory footprint of operations.
+#'
 #' @param track observed locations track
 #' @param crs an equal area CRS projection reference (default = EPSG:3035,
 #'  or extended LAEA Europe)
 #' @param buffer buffer (in km, default = 20) around the bio-logging track file
 #'  to accommodate for a sufficiently large home range area. Value should be
 #'  adjusted to the target species.
+#' @param window window size for resampled forest cover values, number of pixels
+#'  of the window (uneven value, default = 31 or approx. 310m)
+#' @param path path and filename where to save the raster map data. When using
+#'  a temporary file use file.path(tempdir(), "raster_drivers.tif") or similar
+#' @param overwrite overwrite output if the path name is the same (default = TRUE)
 #'
 #' @returns nested list with the regularized data and observed track, also saves
 #'  the used projection crs
@@ -20,10 +26,11 @@
 
 hr_regularize <- function(
   track,
-  dem,
-  lc,
   crs = "EPSG:3035",
-  buffer = 20
+  buffer = 20,
+  window = 31,
+  path,
+  overwrite = TRUE
 ){
 
   # set progression feedback to FALSE
@@ -36,32 +43,30 @@ hr_regularize <- function(
   # calculate reprojected bounding box
   bbox <- track |>
     sf::st_transform(4326) |>
+    sf::st_bbox() |>
+    sf::st_as_sfc() |>
     sf::st_buffer(dist = units::as_units(buffer,"km")) |>
-    sf::st_bbox()
+    sf::st_transform(crs)
 
   # download the data on the fly if data input is missing
-  if(missing(dem) & missing(lc)){
-    cli::cli_alert(
-      "Missing matching DEM and Land Cover data - downloading data"
-    )
+  cli::cli_alert("Downloading DEM and Land Cover data")
 
-    # download the data into the temporary directory
-    hr_dl_maps(
-      track,
-      path = tempdir(),
-      buffer = buffer,
-      overwrite = TRUE
-    )
+  # download the data into the temporary directory
+  hr_dl_maps(
+    track,
+    path = tempdir(),
+    buffer = buffer + 1, # add some buffer
+    overwrite = TRUE
+  )
 
-    # read the data
-    dem <- terra::rast(file.path(tempdir(), "DEM.tif"))
-    lc <- terra::rast(file.path(tempdir(), "LC.tif"))
-  }
+  # read the data
+  dem <- terra::rast(file.path(tempdir(), "DEM.tif"))
+  lc <- terra::rast(file.path(tempdir(), "LC.tif"))
 
   # re-project to equal area
   cli::cli_alert("Reproject data to CRS {crs}")
-  dem <- terra::project(dem, crs, method = "bilinear")
-  lc <- terra::project(lc, crs, method = "mean")
+  dem <- terra::project(dem, crs, method = "bilinear", mask = TRUE)
+  lc <- terra::project(lc, crs, method = "mean", mask = TRUE)
 
   # resample dem (30m) to lc grid (10m)
   cli::cli_alert("Resampling (DEM) data to the highest resolution (LC)")
@@ -81,27 +86,20 @@ hr_regularize <- function(
   # Process Land Cover data
   # crop data
   cli::cli_alert("Processing land cover data")
-  lc <- lc |>
-    terra::crop(
-      bbox
-    )
-
-  # split out mask
-  m <- (lc >= 60 | lc <= 80)
 
   # filter out the forest data
   # and calculate tree cover density for
   # a ~310m window
   cli::cli_alert("Calculating downsampled forest cover data")
   forest <- (lc == 10)
-  forest_density <- terra::focal(forest, w = 31, fun = "mean")
+  forest_density <- terra::focal(forest, w = window, fun = "mean")
   forest_density_sq <- forest_density^2
 
   # agriculture, pasture, urban
   ag <- (lc >= 30 & lc <= 50)
 
   # regrowth/reforested (shrubland) (code 5322 in original data)
-  shrub <- lc == 20
+  shrub <- (lc == 20)
 
   # z-score conversion
   cli::cli_alert("Calculating z-score values")
@@ -110,13 +108,65 @@ hr_regularize <- function(
   forest_density <- z_score(forest_density)
   forest_density_sq <- z_score(forest_density_sq)
 
-  # I don't think we need z-scores for land
-  # cover classes
-  #ag <- z_score(ag)
-  #shrub <- z_score(shrub)
+  # set mask
+  m <- (lc >= 60 & lc <= 80)
+
+  # mask output
+  slope <- terra::mask(
+    slope,
+    mask = m,
+    maskvalues = TRUE,
+    updatevalue = NA
+  )
+
+  slope_sq <- terra::mask(
+    slope_sq,
+    mask = m,
+    maskvalues = TRUE,
+    updatevalue = NA
+  )
+
+  forest_density <- terra::mask(
+    forest_density,
+    mask = m,
+    maskvalues = TRUE,
+    updatevalue = NA
+  )
+
+  forest_density_sq <- terra::mask(
+    forest_density_sq,
+    mask = m,
+    maskvalues = TRUE,
+    updatevalue = NA
+  )
+
+  shrub <- terra::mask(
+    shrub,
+    mask = m,
+    maskvalues = TRUE,
+    updatevalue = NA
+  )
+
+  ag <- terra::mask(
+    ag,
+    mask = m,
+    maskvalues = TRUE,
+    updatevalue = NA
+  )
 
   # output raster
-  output <- c(slope, slope_sq, forest_density, forest_density_sq, shrub, ag)
+  output <- c(
+    slope,
+    slope_sq,
+    forest_density,
+    forest_density_sq,
+    shrub,
+    ag
+  ) * 1.0
+
+  # replace NAs with -9999
+  # as required by the cpp routines
+  # output[is.na(output)] <- -9999
 
   # retain old names
   names(output) <- c(
@@ -128,6 +178,10 @@ hr_regularize <- function(
     "landcover_agri"
   )
 
-  # return compiled dataset
-  return(output)
+  # return compiled dataset if no path is provided
+  if(missing(path)){
+    return(output)
+  } else {
+    terra::writeRaster(output, filename = path, overwrite = overwrite)
+  }
 }

@@ -9,8 +9,7 @@ hr_fit(drivers, obs, settings, optim_out = TRUE, parallel = FALSE, ...)
 \arguments{
 \item{drivers}{A data frame with driver data.}
 
-\item{obs}{A data frame containing observational data used for model
-calibration.}
+\item{obs}{sf object of the biologging track}
 
 \item{settings}{A list containing model calibration settings.}
 

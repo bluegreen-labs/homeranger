@@ -10,11 +10,12 @@ hr_dl_maps(
     c(2021, 2021), asset = c("map", "data"), filename = c("LC.tif", "DEM.tif")),
   buffer = 20,
   path = tempdir(),
-  overwrite = TRUE
+  overwrite = TRUE,
+  progress = FALSE
 )
 }
 \arguments{
-\item{track}{biologging track with coordinates in lat lon (sf object)}
+\item{track}{bio-logging track with coordinates in lat lon (sf object)}
 
 \item{settings}{downloads settings, data frame specifying data
 products and their target year and assets on the planetary computer STAC}
@@ -26,6 +27,9 @@ adjusted to the target species.}
 \item{path}{output path}
 
 \item{overwrite}{overwrite / and re-download the data}
+
+\item{progress}{show download progress bar (as feedback on large downloads,
+default = FALSE)}
 }
 \value{
 raster maps covering your area of interest as geotiff
