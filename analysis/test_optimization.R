@@ -33,21 +33,14 @@ settings <- list(
   )
 )
 
-track <-read.csv("data-raw/tracks/regularized_data_final.csv", sep = ";") |>
-  na.omit() |>
-  sf::st_as_sf(coords = c("x", "y"), crs = "EPSG:4326")
-
-maps <- terra::rast("analysis/test.tif")
-
 # calibrate the model and optimize free parameters
 pars <- hr_fit(
-  drivers = maps,
-  obs = track,
+  drivers = raster_maps,
+  obs = system.file("extdata/Aspromonte_roedeer_traj_1196.txt", package = "homeranger"),
   settings = settings,
+  resolution = 25,
   parallel = FALSE
 )
-
-print(pars)
 
 # plot the parameter distributions
 plot(pars$mod)
