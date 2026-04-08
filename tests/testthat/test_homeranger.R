@@ -32,6 +32,8 @@ test_that("validate model run", {
     par = params,
     obs = system.file("extdata/Aspromonte_roedeer_traj.txt", package = "homeranger"),
     resolution = 25,
+    steps = 0,
+    runs = 0,
     optimization = FALSE,
     verbose = FALSE
   )
@@ -80,6 +82,7 @@ test_that("test optimizations", {
   pars <- hr_fit(
     drivers = raster_maps,
     obs = system.file("extdata/Aspromonte_roedeer_traj_1196.txt", package = "homeranger"),
+    resolution = 25,
     settings = settings,
     parallel = FALSE
   )
