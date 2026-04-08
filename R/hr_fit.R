@@ -38,23 +38,14 @@ hr_fit <- function(
     cli::cli_abort("missing input arguments, please check all parameters")
   }
 
-  # extract xy coordinates based upon geo-referenced data for both
-  # observations and raster maps - also return raster array
-  # input data (sorted based upon provided settings / coefficients)
-  cli::cli_alert_info("Create reference track")
-  obs_loc <- hr_xy(drivers, obs)
-
-  # convert geotiff to array
-  cli::cli_alert_info("Convert referenced data to data arrays")
-  drivers_arr <- terra::as.array(drivers)
-
   # convert to standard cost function naming
   # cost <- eval(settings$metric)
-  cost <- function(par, obs, drivers, names){
+  cost <- function(par, obs, drivers, resolution, names){
     eval(settings$metric)(
       par = par,
       obs = obs,
       data = drivers,
+      resolution = resolution,
       names = names,
       ...
     )
@@ -76,11 +67,12 @@ hr_fit <- function(
       do.call("cost",
               list(
                 par = random_par,
-                obs = obs_loc,
-                drivers = drivers_arr,
+                obs = obs,
+                drivers = drivers,
                 resolution = resolution,
                 names = rownames(pars)
-              ))
+              )
+            )
     },
     prior = priors,
     names = rownames(pars),
