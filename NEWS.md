@@ -3,7 +3,6 @@
 - raster driver regularization (downloads)
 - xy extraction based on an {sf} point object
 
-
 ## homeranger v0.3
 
 - integrating both kernel estimation and simulation modes
