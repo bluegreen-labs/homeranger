@@ -45,7 +45,7 @@ hr_predict <- function(
 
     # set -9999 values to NA
     output$locations[output$locations == -9999] <- NA
-    output$locations$ID <- as.factor(output$locations$ID)
+    output$locations$id <- as.factor(output$locations$id)
 
     # class assignment
     class(output) <- c("hr_predict")
