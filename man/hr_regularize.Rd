@@ -7,9 +7,10 @@
 hr_regularize(
   track,
   crs = "EPSG:3035",
-  buffer = 20,
-  window = 31,
+  buffer = 7,
+  window = 11,
   path,
+  na_value = NA,
   overwrite = TRUE
 )
 }
@@ -19,15 +20,17 @@ hr_regularize(
 \item{crs}{an equal area CRS projection reference (default = EPSG:3035,
 or extended LAEA Europe)}
 
-\item{buffer}{buffer (in km, default = 20) around the bio-logging track file
+\item{buffer}{buffer (in km, default = 11) around the bio-logging track file
 to accommodate for a sufficiently large home range area. Value should be
 adjusted to the target species.}
 
 \item{window}{window size for resampled forest cover values, number of pixels
-of the window (uneven value, default = 31 or approx. 310m)}
+of the window (uneven value, default = 11 or approx. 300m)}
 
 \item{path}{path and filename where to save the raster map data. When using
 a temporary file use file.path(tempdir(), "raster_drivers.tif") or similar}
+
+\item{na_value}{value with which to substitute NA values (e.g. -9999)}
 
 \item{overwrite}{overwrite output if the path name is the same (default = TRUE)}
 }

@@ -11,13 +11,14 @@
 #' @param track observed locations track
 #' @param crs an equal area CRS projection reference (default = EPSG:3035,
 #'  or extended LAEA Europe)
-#' @param buffer buffer (in km, default = 20) around the bio-logging track file
+#' @param buffer buffer (in km, default = 11) around the bio-logging track file
 #'  to accommodate for a sufficiently large home range area. Value should be
 #'  adjusted to the target species.
 #' @param window window size for resampled forest cover values, number of pixels
-#'  of the window (uneven value, default = 31 or approx. 310m)
+#'  of the window (uneven value, default = 11 or approx. 300m)
 #' @param path path and filename where to save the raster map data. When using
 #'  a temporary file use file.path(tempdir(), "raster_drivers.tif") or similar
+#' @param na_value value with which to substitute NA values (e.g. -9999)
 #' @param overwrite overwrite output if the path name is the same (default = TRUE)
 #'
 #' @returns nested list with the regularized data and observed track, also saves
@@ -27,9 +28,10 @@
 hr_regularize <- function(
   track,
   crs = "EPSG:3035",
-  buffer = 20,
-  window = 31,
+  buffer = 7,
+  window = 11,
   path,
+  na_value = NA,
   overwrite = TRUE
 ){
 
@@ -69,8 +71,13 @@ hr_regularize <- function(
   lc <- terra::project(lc, crs, method = "mean", mask = TRUE)
 
   # resample dem (30m) to lc grid (10m)
-  cli::cli_alert("Resampling (DEM) data to the highest resolution (LC)")
-  dem <- terra::resample(dem, lc, method = "bilinear")
+  # downsample
+  cli::cli_alert("Resampling (DEM) data to the lowest common resolution")
+  lc <- terra::resample(lc, dem, method = "modal")
+
+  ##upsample
+  #cli::cli_alert("Resampling (DEM) data to the highest resolution")
+  #dem <- terra::resample(dem, lc, method = "bilinear")
 
   # crop to buffered track size
   cli::cli_alert("cropping data to track outline + buffer")
@@ -164,9 +171,11 @@ hr_regularize <- function(
     ag
   ) * 1.0
 
-  # replace NAs with -9999
+  # replace NAs with another NA value
   # as required by the cpp routines
-  # output[is.na(output)] <- -9999
+  if(!is.na(na_value)){
+    output[is.na(output)] <- na_value
+  }
 
   # retain old names
   names(output) <- c(
