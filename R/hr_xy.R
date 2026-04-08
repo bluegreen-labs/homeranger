@@ -41,12 +41,12 @@ hr_xy <- function(
     # extract XY coordinates
     p <- terra::extract(map, track, xy = TRUE) |>
       dplyr::mutate(
-        animal_id = track$animals_id,
+        id = track$id,
         x = floor(terra::colFromX(map, .data$x) * res),
-        y = floor(terra::rowFromY(map, .data$y) * res)
+        y = floor((nrow(map) - terra::rowFromY(map, .data$y)) * res)
       ) |>
       dplyr::select(
-        "animal_id",
+        "id",
         "x",
         "y"
       )
@@ -56,13 +56,11 @@ hr_xy <- function(
       as.data.frame()
 
     p <- data.frame(
-      animals_id = track$animals_id,
+      id = track$id,
       x = as.integer(coords$X) - as.integer(terra::ext(map)$xmin),
       y = as.integer(coords$Y) - as.integer(terra::ext(map)$ymin)
     )
   }
-
-  print(head(p))
 
   # write to file
   filename <- file.path(tempdir(), "track.txt")
