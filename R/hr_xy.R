@@ -63,8 +63,8 @@ hr_xy <- function(
   }
 
   # write to file
-  filename <- file.path(tempdir(), "track.txt")
-  write.csv(p, file = filename, row.names = FALSE)
+  filename <- file.path(tempdir(), "track.csv")
+  utils::write.csv(p, file = filename, row.names = FALSE)
 
   # return list of coordinates
   return(filename)
