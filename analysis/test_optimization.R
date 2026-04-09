@@ -1,14 +1,14 @@
 library(homeranger)
-
 load(system.file("extdata/raster_maps.rda", package = "homeranger"))
+source("R/hr_fit.R")
 
-settings <- list(
+params <- list(
   metric = hr_cost,
   control = list(
     sampler = "DEzs",
     settings = list(
       burnin = 3,
-      iterations = 9
+      iterations = 4
     )
   ),
   par = list(
@@ -35,9 +35,9 @@ settings <- list(
 
 # calibrate the model and optimize free parameters
 pars <- hr_fit(
-  drivers = raster_maps,
+  data = raster_maps,
   obs = system.file("extdata/Aspromonte_roedeer_traj_1196.txt", package = "homeranger"),
-  settings = settings,
+  par = params,
   resolution = 25,
   parallel = FALSE
 )
