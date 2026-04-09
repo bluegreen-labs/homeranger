@@ -161,8 +161,6 @@ structTrajectory launchTrajectoryCoordinates(
     return returnValues;
 }
 
-
-
 // Gets the trajectory summary metrics
 structSummaryTraj getTrajectoryMetrics(structTrajectory traj)
 {

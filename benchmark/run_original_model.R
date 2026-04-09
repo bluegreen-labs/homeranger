@@ -74,7 +74,8 @@ if(config$value[4] == "true"){
       data = track,
       aes(
         x = c_patch * 25,
-        y = r_patch * 25,
+        y = (nrow(r) - r_patch) * 25,
+        #y = r_patch * 25,
         colour = as.factor(animal_id)
       )
     )

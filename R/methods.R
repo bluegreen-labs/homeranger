@@ -22,13 +22,6 @@ plot.hr_predict <- function(x, ...){
     tidyterra::geom_spatraster(
       data = map_data
     ) +
-    # geom_path(
-    #   data = locations,
-    #   aes(
-    #     col,
-    #     row
-    #   )
-    # ) +
     ggplot2::geom_sf(
       data = locations_sf,
       ggplot2::aes(

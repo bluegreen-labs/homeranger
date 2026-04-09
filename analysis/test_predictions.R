@@ -1,5 +1,7 @@
 library(homeranger)
 library(terra)
+source("R/hr_predict.R")
+source("R/hr_xy.R")
 
 # read in the reference data, these are calculated with the
 # shared original code and provide the step based likelihoods
@@ -39,30 +41,53 @@ params <- list(
 # based upon the order of the coefficients in the parameter
 # list - finally convert to 3D array to be passed to the
 # Cpp function
-r <- terra::rast(list.files("data-raw/drivers/","*.asc", full.names = TRUE))
-r <- as.array(subset(r, names(params$coef)))
-r[is.na(r)] <- 0
+
+original <- TRUE
+
+if(original){
+  r <- terra::rast("analysis/test_asc.tif")
+  res <- terra::res(r)[1]
+  r <- as.array(subset(r, names(params$coef)))
+  r[is.na(r)] <- 0
+  obs <- "data-raw/tracks/Aspromonte_roedeer_traj.txt"
+
+} else {
+
+  r <- terra::rast("analysis/test.tif")
+  track <-read.csv("data-raw/tracks/regularized_data_final.csv", sep = ";") |>
+    rename(id = animals_id) |>
+    na.omit() |>
+    sf::st_as_sf(coords = c("x", "y"), crs = "EPSG:4326") |>
+    sf::st_transform(crs(r, proj = TRUE))
+
+  plot(r$slope)
+  points(track)
+
+  obs <- hr_xy(r, track)
+  res <- terra::res(r)[1]
+  r <- terra::as.array(r)
+}
 
 # run the model for these parameters
 # in optimization mode (to check a traceable output)
 # there should be ~parity as this is deterministic
-output <- hr_predict(
-  data = r,
-  par = params,
-  obs = "data-raw/tracks/Aspromonte_roedeer_traj.txt",
-  steps = 0,
-  runs = 0,
-  resolution = 25,
-  optimization = TRUE,
-  verbose = TRUE
-)
-
-# plot the 1:1 graph - should be spot on
-output$likelihood[output$likelihood == -9999] <- NA
-plot(output$likelihood, reference$likelihood)
-abline(0,1)
-
-set.seed(100)
+# output <- hr_predict(
+#   data = r,
+#   par = params,
+#   obs = obs,
+#   steps = 0,
+#   runs = 0,
+#   resolution = res,
+#   optimization = TRUE,
+#   verbose = TRUE
+# )
+#
+# # plot the 1:1 graph - should be spot on
+# output$likelihood[output$likelihood == -9999] <- NA
+# plot(output$likelihood, reference$likelihood)
+# abline(0,1)
+#
+# set.seed(100)
 
 # run the model for these parameters in prediction
 # mode
@@ -70,9 +95,9 @@ output <-
     hr_predict(
     data = r,
     par = params,
-    obs = "data-raw/tracks/Aspromonte_roedeer_traj.txt",
-    resolution = 25,
-    steps = 1460,
+    obs = obs,
+    resolution = res,
+    steps = 2,
     runs = 2,
     optimization = FALSE,
     verbose = TRUE
@@ -83,20 +108,20 @@ plot(output)
 
 set.seed(42)
 
-# run the model for these parameters in prediction
-# mode
-output <-
-  hr_predict(
-    data = r,
-    par = params,
-    obs = "data-raw/tracks/Aspromonte_roedeer_traj.txt",
-    resolution = 25,
-    steps = 1460,
-    runs = 2,
-    optimization = FALSE,
-    verbose = TRUE
-  )
-
-# print method for hr_predict class
-plot(output)
-
+# # run the model for these parameters in prediction
+# # mode
+# output <-
+#   hr_predict(
+#     data = r,
+#     par = params,
+#     obs = "data-raw/tracks/Aspromonte_roedeer_traj.txt",
+#     resolution = 25,
+#     steps = 1460,
+#     runs = 2,
+#     optimization = FALSE,
+#     verbose = TRUE
+#   )
+#
+# # print method for hr_predict class
+# plot(output)
+#

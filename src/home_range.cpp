@@ -48,7 +48,7 @@ List home_range_cpp(
   int lagR, lagC, lagRmem, lagCmem;
   int looktableR, looktableC;
   double weightR, weightW;
-  int focusPatchX=0, focusPatchY=0;
+  // int focusPatchX=0, focusPatchY=0;
   int nRows, nCols;
 
   // get arena rows and columns
@@ -525,7 +525,7 @@ List home_range_cpp(
   } else {
     return List::create(
       _["locations"] = DataFrame::create(
-        _["ID"] = totalTraj.animalId,
+        _["id"] = totalTraj.animalId,
         _["run"] = totalTraj.run,
         _["col"] = totalTraj.col,
         _["row"] = totalTraj.row

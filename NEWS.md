@@ -1,3 +1,9 @@
+## homeranger v0.4
+
+- raster driver regularization (downloads)
+- xy extraction based on an {sf} point object
+- consolidation function parameters + docs
+
 ## homeranger v0.3
 
 - integrating both kernel estimation and simulation modes

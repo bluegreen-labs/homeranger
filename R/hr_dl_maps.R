@@ -13,21 +13,23 @@
 #' STAC product collection name, the required year and the asset (subset)
 #' required.
 #'
-#' @param track biologging track with coordinates in lat lon (sf object)
+#' @param track bio-logging track with coordinates in lat lon (sf object)
 #' @param settings downloads settings, data frame specifying data
 #'  products and their target year and assets on the planetary computer STAC
-#' @param buffer buffer (in km, default = 20) around the biologging track file
+#' @param buffer buffer (in km, default = 20) around the bio-logging track file
 #'  to accommodate for a sufficiently large home range area. Value should be
 #'  adjusted to the target species.
 #' @param path output path
 #' @param overwrite overwrite / and re-download the data
+#' @param progress show download progress bar (as feedback on large downloads,
+#'  default = FALSE)
 #'
 #' @return raster maps covering your area of interest as geotiff
 #' @export
 #' @import rstac
 #' @import units
 
-hr_raster_maps <- function(
+hr_dl_maps <- function(
     track,
     settings = data.frame(
       collection = c("esa-worldcover", "cop-dem-glo-30"),
@@ -37,7 +39,8 @@ hr_raster_maps <- function(
     ),
     buffer = 20,
     path = tempdir(),
-    overwrite = FALSE
+    overwrite = TRUE,
+    progress = FALSE
 ){
 
   # calculate bounding box around track
@@ -45,7 +48,7 @@ hr_raster_maps <- function(
     sf::st_transform(4326) |>
     sf::st_bbox() |>
     sf::st_as_sfc() |>
-    sf::st_buffer(dist = units::as_units(20,"km"))
+    sf::st_buffer(dist = units::as_units(buffer,"km"))
 
   # set the stac source
   stac_source <- rstac::stac(
@@ -61,7 +64,7 @@ hr_raster_maps <- function(
   available_collections <- lapply(
     rstac::get_request(collections_query)$collections,
     \(x) x$id
-  ) |>
+    ) |>
     do.call(what = rbind)
 
   # check if both requested collations are in the STAC
@@ -106,19 +109,28 @@ hr_raster_maps <- function(
       s["asset"],
       output_dir = tmp_dir,
       overwrite = TRUE,
-      progress = TRUE
+      progress = progress
     )
 
     # list downloaded files
-    image_file <- list.files(
+    image_files <- list.files(
       tmp_dir,
       "*.tif",
       recursive = TRUE,
       full.names = TRUE
     )
 
-    # read in the image file
-    r <- terra::rast(image_file)
+    # merge data if the returned data
+    # contains more than one file
+    if(length(image_files) > 1){
+      r_l <- lapply(image_files, terra::rast) |> terra::sprc()
+      r <- terra::merge(r_l)
+    } else {
+      # read in the image file
+      r <- terra::rast(image_files)
+    }
+
+    # crop data to size
     r <- terra::crop(r, track_bbox)
 
     # write to file, ignore warnings
@@ -131,7 +143,10 @@ hr_raster_maps <- function(
     )
 
     # delete temporary files
-    file.remove(image_file)
+    #file.remove(image_files)
     }
   )
+
+  # invisible output
+  invisible()
 }
