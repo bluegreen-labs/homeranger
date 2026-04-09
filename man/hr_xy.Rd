@@ -7,15 +7,15 @@
 hr_xy(map, track, method = "exact")
 }
 \arguments{
-\item{map}{a \{terra\} raster map (stack)}
+\item{map}{a geo-referenced \{terra\} raster map (stack)}
 
-\item{track}{an \{sf\} multi-point file}
+\item{track}{an \{sf\} multi-point file of observations}
 
 \item{method}{exact or approximate location conversions (default = "exact")}
 }
 \value{
-a nested list containing a converted map array and a list of
-coordinates for the provided track points relative to this array.
+the location of the track file in the correct format (written to
+the temporary directory)
 }
 \description{
 Converts map and track coordinates to col/row (X/Y), relative values with

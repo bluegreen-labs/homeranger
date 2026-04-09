@@ -7,12 +7,12 @@
 #' lon/lat (WGS84) can be used but is not encouraged. The project should be
 #' chosen based on the locale.
 #'
-#' @param map a \{terra\} raster map (stack)
-#' @param track an \{sf\} multi-point file
+#' @param map a geo-referenced \{terra\} raster map (stack)
+#' @param track an \{sf\} multi-point file of observations
 #' @param method exact or approximate location conversions (default = "exact")
 #'
-#' @returns a nested list containing a converted map array and a list of
-#'  coordinates for the provided track points relative to this array.
+#' @returns the location of the track file in the correct format (written to
+#'  the temporary directory)
 #' @export
 
 hr_xy <- function(
