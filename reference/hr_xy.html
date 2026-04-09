@@ -26,7 +26,7 @@ chosen based on the locale."><meta property="og:image" content="/logo.png"><meta
         <a class="external-link hidden-md hidden-lg" href="https://bluegreenlabs.org">
           <img src="https://bluegreenlabs.org/img/logo.png" id="hexlogo" alt="bluegreen labs"></a>
         <a class="navbar-brand" href="../index.html">
-           <i>homeranger <small>v0.3</small></i>
+           <i>homeranger <small>v0.4</small></i>
         </a>
       </div>
     </div>
@@ -76,7 +76,7 @@ chosen based on the locale.</p>
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">hr_xy</span><span class="op">(</span><span class="va">map</span>, track <span class="op">=</span> <span class="cn">NULL</span>, crs <span class="op">=</span> <span class="st">"+proj=longlat +datum=WGS84"</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">hr_xy</span><span class="op">(</span><span class="va">map</span>, <span class="va">track</span>, method <span class="op">=</span> <span class="st">"exact"</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -84,21 +84,21 @@ chosen based on the locale.</p>
 
 
 <dl><dt id="arg-map">map<a class="anchor" aria-label="anchor" href="#arg-map"></a></dt>
-<dd><p>a {terra} raster map (stack)</p></dd>
+<dd><p>a geo-referenced {terra} raster map (stack)</p></dd>
 
 
 <dt id="arg-track">track<a class="anchor" aria-label="anchor" href="#arg-track"></a></dt>
-<dd><p>an {sf} multi-point file</p></dd>
+<dd><p>an {sf} multi-point file of observations</p></dd>
 
 
-<dt id="arg-crs">crs<a class="anchor" aria-label="anchor" href="#arg-crs"></a></dt>
-<dd><p>a valid CRS description (default = "+proj=longlat +datum=WGS84")</p></dd>
+<dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>
+<dd><p>exact or approximate location conversions (default = "exact")</p></dd>
 
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <p>a nested list containing a converted map array and a list of
-coordinates for the provided track points relative to this array.</p>
+    <p>the location of the track file in the correct format (written to
+the temporary directory)</p>
     </div>
 
   </div>
