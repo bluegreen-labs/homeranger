@@ -2,6 +2,7 @@
 
 - raster driver regularization (downloads)
 - xy extraction based on an {sf} point object
+- consolidation function parameters + docs
 
 ## homeranger v0.3
 
