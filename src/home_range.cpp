@@ -136,6 +136,7 @@ List home_range_cpp(
   lookupTable stepLengthKernel = iniApproxKernelStepLength(
     thresholdApproxKernel[0],
     resolution,
+    500,
     stepLengthDist[0],
     stepLengthShape[0],
     0
@@ -535,7 +536,6 @@ List home_range_cpp(
         }
       }
     }
-
   } // number of animals loop (individual loop)
 
   // cleanup data frames
