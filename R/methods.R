@@ -25,9 +25,10 @@ plot.hr_predict <- function(x, ...){
     ggplot2::geom_sf(
       data = locations_sf,
       ggplot2::aes(
-        colour = .data$ID
+        colour = .data$id
       )
-    )
+    ) +
+    ggplot2::facet_wrap(~ .data$run)
 
   # output plot
   print(p)
