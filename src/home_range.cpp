@@ -33,8 +33,7 @@ List home_range_cpp(
     int nSimulatedRuns,
     bool optimization,
     bool verbose
-  )
-{
+  ){
 
   // Environment setup ---------------------------------------------------------
   time_t iniTime = time(0);
@@ -120,7 +119,7 @@ List home_range_cpp(
     Rcout << "Reading data table, run time: "<< ms << " ms" << std::endl;
   }
 
-  // deep copy
+  // deep copy of gridded data (check for speed gains)
   NumericMatrix res = wrap(arrayResourceSelection);
 
   // convert from arma matrix
@@ -132,6 +131,8 @@ List home_range_cpp(
 
   begin = std::chrono::high_resolution_clock::now();
 
+  // create step selection kernel (probability distribution
+  // to make a certain move discretized in 2D)
   lookupTable stepLengthKernel = iniApproxKernelStepLength(
     thresholdApproxKernel[0],
     resolution,
@@ -140,12 +141,14 @@ List home_range_cpp(
     0
   );
 
+  // create reference working memory kernel
   lookupTable r_memoryKernel = iniApproxKernel(
     thresholdMemoryKernel[0],
     resolution,
     memoryRDist[0]
   );
 
+  // create working memory kernel
   lookupTable w_memoryKernel = iniApproxKernel(
     thresholdMemoryKernel[0],
     resolution,
@@ -160,7 +163,7 @@ List home_range_cpp(
   }
 
   // loading trajectory files
-  structTrajectory Traj=launchTrajectoryCoordinates(
+  structTrajectory Traj = launchTrajectoryCoordinates(
     trajectoryPath,
     resolution,
     0,
@@ -213,7 +216,7 @@ List home_range_cpp(
     arena_renewal(Arena, 0, 0);
 
     // START OF RELOCATION ITERATIONS
-    // RELOCATION LOOP (from release to 2nd from last point
+    // (from release to 2nd from last point
     // as such we do not process the last point, this last point
     // will be used as the "starting" release point in case of a
     // simulation (see further down)
@@ -529,7 +532,6 @@ List home_range_cpp(
 
           // increment total line count
           totalCount = totalCount + 1;
-
         }
       }
     }
@@ -572,5 +574,4 @@ List home_range_cpp(
       _["resources"] = ListMatrix::create(res)
     );
   }
-
 }
