@@ -184,37 +184,47 @@ List home_range_cpp(
   }
 
   // initiate memory for the simulated trajectory
-  // make conditional?
   structTrajectorySimul totalTraj;
-  totalTraj.animalId.reserve(TrajMetrics.totalLength + nAnimals * nSimulatedSteps * nSimulatedRuns);
-  totalTraj.run.reserve(TrajMetrics.totalLength + nAnimals * nSimulatedSteps * nSimulatedRuns);
-  totalTraj.col.reserve(TrajMetrics.totalLength + nAnimals * nSimulatedSteps * nSimulatedRuns);
-  totalTraj.row.reserve(TrajMetrics.totalLength + nAnimals * nSimulatedSteps * nSimulatedRuns);
+  totalTraj.animalId.reserve(nAnimals * nSimulatedSteps * nSimulatedRuns);
+  totalTraj.run.reserve(nAnimals * nSimulatedSteps * nSimulatedRuns);
+  totalTraj.col.reserve(nAnimals * nSimulatedSteps * nSimulatedRuns);
+  totalTraj.row.reserve(nAnimals * nSimulatedSteps * nSimulatedRuns);
 
   double sumAttractionVectors,randNumber;
   int totalCount;
-  totalCount=-1;
-  rowCount=-1;
-  lagR=0;
-  lagC=0;
-  lagRmem=0;
-  lagCmem=0;
+  totalCount = -1;
+  rowCount = -1;
+  lagR = 0;
+  lagC = 0;
+  lagRmem = 0;
+  lagCmem = 0;
 
   // START OF INDIVIDUAL LOOP
-  for(ind=0;ind<nAnimals;ind++){
+  // This loops over all individuals and calculates
+  // the memory landscape for the individual. This also
+  // includes the calculation of the step likelihood
+  // in optimization mode (i.e. calculating the likelihood
+  // of making a particular move towards the -next- location
+  // from the current one)
+  for(ind = 0; ind < nAnimals; ind++){
 
     // Re-initialization of the arena
     // clearing reference and working memory
     arena_renewal(Arena, 0, 0);
 
     // START OF RELOCATION ITERATIONS
-    // RELOCATION LOOP (from release to 2nd from last point)
-    for(ite=0; ite < TrajMetrics.individualCount[ind] - 1; ite++){
+    // RELOCATION LOOP (from release to 2nd from last point
+    // as such we do not process the last point, this last point
+    // will be used as the "starting" release point in case of a
+    // simulation (see further down)
+    for(ite = 0; ite < TrajMetrics.individualCount[ind] - 1; ite++){
 
+      // loops over all rows of known / observed
+      // locations (locations are stored in rows with an
+      // id and col and row denoting a location)
+      // locations are -1 indexed so the increment
+      // is on top rather than at the end of the loop
       rowCount = rowCount + 1;
-
-      // simulation only
-      totalCount = totalCount + 1;
 
       currentCol = Traj.col[rowCount];
       currentRow = Traj.row[rowCount];
@@ -285,7 +295,7 @@ List home_range_cpp(
             Arena.arrayMemoriesRef[r][c] = Arena.arrayMemoriesRef[r][c]/memoryRD_cplm;
             Arena.arrayMemoriesWork[r][c] = Arena.arrayMemoriesWork[r][c]/memoryWD_cplm;
 
-            // then update the memory strenght based upon a function
+            // then update the memory strength based upon a function
             Arena.arrayMemoriesRef[r][c] = Arena.arrayMemoriesRef[r][c]-
               (1 - weightR) * Arena.arrayMemoriesRef[r][c] * memoryRD[0]+
               weightR * memoryRL[0];
@@ -329,7 +339,7 @@ List home_range_cpp(
 
             // 3. Calculate step likelihood
             if(sum_weights > 0){
-              Traj.likelihood[rowCount] = log(Arena.arrayAttractionWeight[nextRow][nextCol]/sum_weights);
+              Traj.likelihood[rowCount] = log(Arena.arrayAttractionWeight[nextRow][nextCol] / sum_weights);
             } else {
               Traj.likelihood[rowCount] = log(Arena.arrayAttractionWeight[nextRow][nextCol]);
             }
@@ -338,29 +348,30 @@ List home_range_cpp(
 
       } // currentCol section
 
-      if(!optimization){
-        // 3. Update total trajectory
-        // run 0 is therefore the original data !!!!
-        totalTraj.animalId.push_back(TrajMetrics.animalId[ind]);
-        totalTraj.run.push_back(0);
-        totalTraj.col.push_back(currentCol);
-        totalTraj.row.push_back(currentRow);
-      }
+    }  // individual number of observed steps / relocation loop
 
-    }  // individual number of steps / relocation loop
-
-    //rowCount = rowCount+1;
-
+    //  PART 2: SIMULATIONS!
     if(!optimization){
-      // PART 2: SIMULATIONS!
-      rowCount = rowCount + 1; // -1 + 1 = 0 index
-      totalCount = totalCount + 1;
+
+      // continue the simulation from last know coordinate
+      // since we only process up to the second to last point
+      // in the spin-up loop (above) this is the last known
+      // coordinate point
+      rowCount = rowCount + 1;
+
+      // writes original starting position to file, this is
+      // the last observed value for every individual
       totalTraj.animalId.push_back(TrajMetrics.animalId[ind]);
       totalTraj.run.push_back(0);
       totalTraj.col.push_back(Traj.col[rowCount]);
       totalTraj.row.push_back(Traj.row[rowCount]);
 
-      // Save info for re-initializing runs
+      // total count is set by the total number of desired
+      // simulations, and runs inside the individual loop
+      // this value should not be incremented during spin-up
+      totalCount = totalCount + 1;
+
+      // set the initial release location
       releaseCol = totalTraj.col[totalCount];
       releaseRow = totalTraj.row[totalCount];
 
@@ -378,7 +389,10 @@ List home_range_cpp(
         }
       }
 
-      // LOOPS
+      // Simulated runs, with set number of steps
+      // for the first step the release location is
+      // used, for all subsequent steps the previous
+      // simulated step is used as a starting position
       for(int run = 1; run <= nSimulatedRuns; run++){ // number of runs
         for(ite = 0; ite < nSimulatedSteps; ite++){ // number of steps
           // Ensures that the first point is the release coordinate
@@ -387,7 +401,8 @@ List home_range_cpp(
             currentCol = releaseCol;
             currentRow = releaseRow;
 
-            // re-update memory
+            // re-update memory at the beginning of a set of
+            // simulated steps
             for(int r = 0; r < Arena.nRows; r++){
               for(int c = 0; c < Arena.nCols; c++){
                 Arena.arrayMemoriesRef[r][c] = memoriesRefIni[r][c];
@@ -412,16 +427,16 @@ List home_range_cpp(
           maxCmem = currentCol + r_memoryKernel.nCells + 1;
 
           // Corrections to make sure the kernels do not go beyond the study area
-          lagR=0;
-          lagC=0;
+          lagR = 0;
+          lagC = 0;
 
           if(minR < 0){lagR = minR; minR = 0;}
           if(maxR > Arena.nRows){maxR = Arena.nRows;}
           if(minC < 0){lagC = minC; minC = 0;}
           if(maxC > Arena.nCols){maxC = Arena.nCols;}
 
-          lagRmem=0;
-          lagCmem=0;
+          lagRmem = 0;
+          lagCmem = 0;
           if(minRmem < 0){lagRmem = minRmem; minRmem = 0;}
           if(maxRmem > Arena.nRows){maxRmem = Arena.nRows;}
           if(minCmem < 0){lagCmem = minCmem; minCmem = 0;}
@@ -429,32 +444,32 @@ List home_range_cpp(
 
           // 1. Memory dynamics
           // memory loss
-          for(int r=0;r<Arena.nRows;r++){
-            for(int c=0;c<Arena.nCols;c++){
+          for(int r = 0; r < Arena.nRows; r++){
+            for(int c = 0; c < Arena.nCols; c++){
               Arena.arrayMemoriesRef[r][c] = Arena.arrayMemoriesRef[r][c] * memoryRD_cplm;
               Arena.arrayMemoriesWork[r][c] = Arena.arrayMemoriesWork[r][c] * memoryWD_cplm;
             }
           }
           // At cells within neighborhood...
-          for(int r=minRmem;r<maxRmem;r++){
-            looktableR=r-minRmem-lagRmem;
+          for(int r = minRmem; r < maxRmem; r++){
+            looktableR = r - minRmem - lagRmem;
 
-            for(int c=minCmem;c<maxCmem;c++){
-              looktableC=c-minCmem-lagCmem;
+            for(int c = minCmem; c < maxCmem; c++){
+              looktableC = c - minCmem - lagCmem;
 
-              weightR=r_memoryKernel.vals[looktableR][looktableC];
-              weightW=w_memoryKernel.vals[looktableR][looktableC];
+              weightR = r_memoryKernel.vals[looktableR][looktableC];
+              weightW = w_memoryKernel.vals[looktableR][looktableC];
 
-              Arena.arrayMemoriesRef[r][c]=Arena.arrayMemoriesRef[r][c]/memoryRD_cplm;
-              Arena.arrayMemoriesWork[r][c]=Arena.arrayMemoriesWork[r][c]/memoryWD_cplm;
+              Arena.arrayMemoriesRef[r][c] = Arena.arrayMemoriesRef[r][c] / memoryRD_cplm;
+              Arena.arrayMemoriesWork[r][c] = Arena.arrayMemoriesWork[r][c] / memoryWD_cplm;
 
-              Arena.arrayMemoriesRef[r][c]=Arena.arrayMemoriesRef[r][c]-
-                (1-weightR)*Arena.arrayMemoriesRef[r][c]*memoryRD[0]+
-                weightR*memoryRL[0];
+              Arena.arrayMemoriesRef[r][c] = Arena.arrayMemoriesRef[r][c] -
+                (1 - weightR) * Arena.arrayMemoriesRef[r][c] * memoryRD[0] +
+                weightR * memoryRL[0];
 
-              Arena.arrayMemoriesWork[r][c]=Arena.arrayMemoriesWork[r][c]-
-                (1-weightW)*Arena.arrayMemoriesWork[r][c]*memoryWD[0]+
-                weightW*memoryWL[0];
+              Arena.arrayMemoriesWork[r][c] = Arena.arrayMemoriesWork[r][c] -
+                (1 - weightW) * Arena.arrayMemoriesWork[r][c] * memoryWD[0]+
+                weightW * memoryWL[0];
             }
           }
 
@@ -485,7 +500,6 @@ List home_range_cpp(
           }
 
           // 3. Calculate random step
-          //randNumber=drand48()*sum_weights;
           randNumber=R::runif(0,1) * sum_weights;
 
           // reset value every time
@@ -508,17 +522,19 @@ List home_range_cpp(
           }
 
           // 4. Write simulated point
-          totalCount = totalCount + 1;
           totalTraj.animalId.push_back(TrajMetrics.animalId[ind]);
           totalTraj.run.push_back(run);
           totalTraj.col.push_back(nextCol);
           totalTraj.row.push_back(nextRow);
 
+          // increment total line count
+          totalCount = totalCount + 1;
+
         }
       }
     }
 
-  } // number of animals loop
+  } // number of animals loop (individual loop)
 
   // cleanup data frames
   // this avoids runaway memory use on iterations which is
