@@ -80,7 +80,7 @@ structTrajectory launchTrajectoryCoordinates(
             }
             else
             {
-                ratio_position_x=(col-min_x)/resolution;
+                ratio_position_x=(col - min_x)/resolution;
                 ratio_int_position_x=(int) ratio_position_x;
                 returnValues.col.push_back(ratio_int_position_x);
             }
