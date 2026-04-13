@@ -117,12 +117,6 @@ structTrajectory launchTrajectoryCoordinates(
 
 structSummaryTraj getTrajectoryMetrics(structTrajectory loadedTraj);
 
-void joinTrajectoryLandscape(
-        std::string output_directory,
-        structTrajectory & loadedTraj,
-        double** resource_selection_array
-);
-
 // kernels.cpp
 lookupTable iniApproxKernel (
         double distance_threshold,
