@@ -8,8 +8,14 @@
 
 // Creates a lookup table for the movement probability
 // based on the step length distribution
-lookupTable iniApproxKernelStepLength (double distance_threshold, double resolution, double spatial_decay, double shape, double residence_p)
-{
+lookupTable iniApproxKernelStepLength (
+    double distance_threshold,
+    double resolution,
+    double n_bins,
+    double spatial_decay,
+    double shape,
+    double residence_p
+  ){
     lookupTable returnValues;
 
     returnValues.nCells=(int) distance_threshold/resolution;
@@ -21,7 +27,7 @@ lookupTable iniApproxKernelStepLength (double distance_threshold, double resolut
     double dr_sq, dc_sq;
     double dist;
 
-    double n_bins = 500; 		//n cells right, or left, or up, or down from the focus cell
+    //double n_bins = 500; //n cells right, or left, or up, or down from the focus cell
     double size_bins = resolution/(2 * n_bins);
     double integral_numerator = 0;
     double integral_denominator = 0;
@@ -66,7 +72,6 @@ lookupTable iniApproxKernelStepLength (double distance_threshold, double resolut
     			}
         }
     }
-
 
     // Accounting for residence probability
     for(int r = 0; r < length; r++){

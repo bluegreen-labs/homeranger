@@ -127,6 +127,7 @@ lookupTable iniApproxKernel (
 lookupTable iniApproxKernelStepLength (
         double distance_threshold,
         double resolution,
+        double n_bins,
         double spatial_decay,
         double shape,
         double residence_p
