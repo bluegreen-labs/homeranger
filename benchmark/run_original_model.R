@@ -78,7 +78,8 @@ if(config$value[4] == "true"){
         #y = r_patch * 25,
         colour = as.factor(animal_id)
       )
-    )
+    ) +
+    facet_wrap(~run)
 
   plot(p)
 }
