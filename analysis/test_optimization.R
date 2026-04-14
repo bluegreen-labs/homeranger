@@ -8,7 +8,7 @@ params <- list(
     sampler = "DEzs",
     settings = list(
       burnin = 3,
-      iterations = 4
+      iterations = 100
     )
   ),
   par = list(
@@ -33,13 +33,18 @@ params <- list(
   )
 )
 
+p <-read.csv(system.file("extdata/Aspromonte_roedeer_traj_1196.txt", package = "homeranger")
+) |>
+  as.matrix()
+
 # calibrate the model and optimize free parameters
+# for only ONE individual!!
 pars <- hr_fit(
-  data = raster_maps,
-  obs = system.file("extdata/Aspromonte_roedeer_traj_1196.txt", package = "homeranger"),
-  par = params,
-  resolution = 25,
-  parallel = FALSE
+    data = raster_maps,
+    obs = p,
+    par = params,
+    resolution = 25,
+    parallel = FALSE
 )
 
 # plot the parameter distributions
