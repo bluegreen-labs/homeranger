@@ -12,20 +12,20 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
 // home_range_cpp
-List home_range_cpp(arma::cube data, List par, std::string trajectoryPath, int resolution, int nSimulatedSteps, int nSimulatedRuns, bool optimization, bool verbose);
-RcppExport SEXP _homeranger_home_range_cpp(SEXP dataSEXP, SEXP parSEXP, SEXP trajectoryPathSEXP, SEXP resolutionSEXP, SEXP nSimulatedStepsSEXP, SEXP nSimulatedRunsSEXP, SEXP optimizationSEXP, SEXP verboseSEXP) {
+List home_range_cpp(arma::cube data, List par, arma::mat locations, int resolution, int nSimulatedSteps, int nSimulatedRuns, bool optimization, bool verbose);
+RcppExport SEXP _homeranger_home_range_cpp(SEXP dataSEXP, SEXP parSEXP, SEXP locationsSEXP, SEXP resolutionSEXP, SEXP nSimulatedStepsSEXP, SEXP nSimulatedRunsSEXP, SEXP optimizationSEXP, SEXP verboseSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< arma::cube >::type data(dataSEXP);
     Rcpp::traits::input_parameter< List >::type par(parSEXP);
-    Rcpp::traits::input_parameter< std::string >::type trajectoryPath(trajectoryPathSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type locations(locationsSEXP);
     Rcpp::traits::input_parameter< int >::type resolution(resolutionSEXP);
     Rcpp::traits::input_parameter< int >::type nSimulatedSteps(nSimulatedStepsSEXP);
     Rcpp::traits::input_parameter< int >::type nSimulatedRuns(nSimulatedRunsSEXP);
     Rcpp::traits::input_parameter< bool >::type optimization(optimizationSEXP);
     Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
-    rcpp_result_gen = Rcpp::wrap(home_range_cpp(data, par, trajectoryPath, resolution, nSimulatedSteps, nSimulatedRuns, optimization, verbose));
+    rcpp_result_gen = Rcpp::wrap(home_range_cpp(data, par, locations, resolution, nSimulatedSteps, nSimulatedRuns, optimization, verbose));
     return rcpp_result_gen;
 END_RCPP
 }

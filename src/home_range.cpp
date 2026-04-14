@@ -27,7 +27,7 @@ using namespace arma;
 List home_range_cpp(
     arma::cube data,
     List par,
-    std::string trajectoryPath,
+    arma::mat locations,
     int resolution,
     int nSimulatedSteps,
     int nSimulatedRuns,
@@ -48,7 +48,6 @@ List home_range_cpp(
   int lagR, lagC, lagRmem, lagCmem;
   int looktableR, looktableC;
   double weightR, weightW;
-  // int focusPatchX=0, focusPatchY=0;
   int nRows, nCols;
 
   // get arena rows and columns
@@ -161,8 +160,9 @@ List home_range_cpp(
   }
 
   // loading trajectory files
-  structTrajectory Traj=launchTrajectoryCoordinates(
-    trajectoryPath,
+  structTrajectory Traj=launchTrajectoryCoordinatesMat(
+    locations,
+    //trajectoryPath,
     resolution,
     0,
     0,

@@ -6,6 +6,7 @@
 #ifndef HEADER_H_
 #define HEADER_H_
 
+#include <RcppArmadillo.h>
 #include    <stdlib.h>
 #include    <cmath>
 #include    <math.h>
@@ -107,6 +108,16 @@ void initialize2D_call(double** & vector, int nR, int nC);
 // Import_traj.cpp
 structTrajectory launchTrajectoryCoordinates(
         std::string path,
+        double resolution,
+        double min_x,
+        double min_y,
+        int n_row,
+        int n_col,
+        int n_cells_mem
+);
+
+structTrajectory launchTrajectoryCoordinatesMat(
+        arma::mat locations,
         double resolution,
         double min_x,
         double min_y,

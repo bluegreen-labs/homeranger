@@ -34,7 +34,7 @@ hr_predict <- function(
   output <- home_range_cpp(
     data = data,
     par = par,
-    trajectoryPath = obs,
+    locations = obs,
     resolution = resolution,
     nSimulatedSteps = steps,
     nSimulatedRuns = runs,
