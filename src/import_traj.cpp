@@ -7,8 +7,7 @@
 
 #include "header.h"
 
-// Imports the trajectories
-// transform continuous coordinates into discrete patch ID
+// Imports the trajectories -- transform continuous coordinates into discrete patch ID
 structTrajectory launchTrajectoryCoordinates(
     std::string path,
     double resolution,
@@ -80,11 +79,11 @@ structTrajectory launchTrajectoryCoordinates(
             }
             else
             {
-                ratio_position_x=(col - min_x)/resolution;
+                ratio_position_x=(col-min_x)/resolution;
                 ratio_int_position_x=(int) ratio_position_x;
                 returnValues.col.push_back(ratio_int_position_x);
             }
-            line2 = line2.erase(0, line2.find(",") + 1);
+            line2=line2.erase(0, line2.find(",")+1);
 
             extracted2 = line2.substr(0, line2.find(" "));
             row=std::stod (extracted2,&sz2);
@@ -94,18 +93,18 @@ structTrajectory launchTrajectoryCoordinates(
             }
             else
             {
-                ratio_position_y = (row - min_y)/resolution;
-                ratio_int_position_y = (int) ceil(ratio_position_y);
-                returnValues.row.push_back(n_row - ratio_int_position_y);
+                ratio_position_y=(row-min_y)/resolution;;
+                ratio_int_position_y=(int) ceil(ratio_position_y);
+                returnValues.row.push_back(n_row-ratio_int_position_y);
             }
 
             // Definition of the animal's bounding box
             if(new_animal==true)
             {
-        		returnValues.minColMem[counter-2]=returnValues.col[counter-2]-n_cells_mem;
-        		returnValues.maxColMem[counter-2]=returnValues.col[counter-2]+n_cells_mem;
-        		returnValues.minRowMem[counter-2]=returnValues.row[counter-2]-n_cells_mem;
-        		returnValues.maxRowMem[counter-2]=returnValues.row[counter-2]+n_cells_mem;
+            		returnValues.minColMem[counter-2]=returnValues.col[counter-2]-n_cells_mem;
+            		returnValues.maxColMem[counter-2]=returnValues.col[counter-2]+n_cells_mem;
+            		returnValues.minRowMem[counter-2]=returnValues.row[counter-2]-n_cells_mem;
+            		returnValues.maxRowMem[counter-2]=returnValues.row[counter-2]+n_cells_mem;
             }
             else
             {
@@ -166,12 +165,13 @@ structTrajectory launchTrajectoryCoordinates(
 structSummaryTraj getTrajectoryMetrics(structTrajectory traj)
 {
     int l;
-    int ind = -9999;
-    int indCount = 0;
+    int ind=-9999;
+    int indCount=0;
     int count;
     structSummaryTraj returnValues;
 
-    returnValues.totalLength = traj.animalId.size();
+    returnValues.totalLength=traj.animalId.size();
+
     returnValues.animalId.reserve(100);
     returnValues.individualCount.reserve(100);
 
@@ -202,3 +202,42 @@ structSummaryTraj getTrajectoryMetrics(structTrajectory traj)
 
     return returnValues;
 }
+
+
+// Gets the trajectory's associated spatial information
+// Extracts covariate values for all fixes
+// Note.: this might give an error if the points are outside the rasters!
+void joinTrajectoryLandscape(std::string output_directory, structTrajectory & loadedTraj, double** resource_selection_array)
+{
+    //time_t iniTime = time(0);
+
+    int nRelocations=loadedTraj.col.size();
+
+    for(int r=0;r<nRelocations;r++)
+    {
+        if(loadedTraj.col[r]==-9999)
+        {
+            loadedTraj.resourceSelection[r]=0;
+        }
+        else
+        {
+            loadedTraj.resourceSelection[r]=resource_selection_array[loadedTraj.row[r]][loadedTraj.col[r]];
+        }
+    }
+
+    std::ofstream outputFile2;
+
+    std::string filePath_writing = output_directory + "trajectory_covariates.csv";
+    outputFile2.open(filePath_writing.c_str());
+    outputFile2 << std::fixed;
+    outputFile2 << "animal_id,r_patch,c_patch,resource_selection"<<std::endl;
+    for(int r=0;r<nRelocations;r++)
+    {
+        outputFile2 << loadedTraj.animalId[r] <<","<<
+        			loadedTraj.row[r] <<","<<loadedTraj.col[r]<<","<<
+                loadedTraj.resourceSelection[r]<<std::endl;                                                                                                      ;
+    }
+
+    outputFile2.close();
+}
+
