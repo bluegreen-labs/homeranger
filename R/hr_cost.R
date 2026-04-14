@@ -31,7 +31,7 @@ hr_cost <- function(
   cost <- home_range_cpp(
     data = data,
     par = par_ref,
-    trajectoryPath = obs,
+    locations = obs,
     resolution = resolution,
     nSimulatedSteps = 0,
     nSimulatedRuns = 0,
