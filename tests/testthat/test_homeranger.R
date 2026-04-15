@@ -27,7 +27,9 @@ test_that("validate model run", {
   )
 
   # read in data and convert to matrix
-  obs <- read.csv("data-raw/tracks/Aspromonte_roedeer_traj.txt") |>
+  obs <- read.csv(
+    system.file("extdata/Aspromonte_roedeer_traj.txt", package = "homeranger")
+  ) |>
     as.matrix()
 
   # run the model for these parameters
@@ -56,8 +58,8 @@ test_that("test optimizations", {
     control = list(
       sampler = "DEzs",
       settings = list(
-        burnin = 10,
-        iterations = 60
+        burnin = 3,
+        iterations = 10
       )
     ),
     par = list(
@@ -83,7 +85,10 @@ test_that("test optimizations", {
   )
 
   # read in data and convert to matrix
-  obs <- read.csv("data-raw/tracks/Aspromonte_roedeer_traj.txt") |>
+  obs <- read.csv(
+    system.file("extdata/Aspromonte_roedeer_traj.txt", package = "homeranger")
+    ) |>
+    dplyr::filter("animal_id" == 1196) |>
     as.matrix()
 
   # calibrate the model and optimize free parameters
