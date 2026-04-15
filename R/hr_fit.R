@@ -41,15 +41,15 @@ hr_fit <- function(
   # this routine allows for dynamic cost function
   # calling without too much trouble (consider deleting
   # if not really desired to limit overhead)
-  cost <- function(settings, obs, data, resolution, names){
-    eval(par$metric)(
-      par = settings,
-      obs = obs,
-      data = data,
-      resolution = resolution,
-      names = names,
-      ...
-    )
+  cost <- function(settings, obs, data, resolution, names, cost_function){
+   eval(cost_function)(
+     par = settings,
+     obs = obs,
+     data = data,
+     resolution = resolution,
+     names = names,
+     ...
+   )
   }
 
   # reformat parameters
@@ -71,7 +71,8 @@ hr_fit <- function(
                 obs = obs,
                 data = data,
                 resolution = resolution,
-                names = rownames(pars)
+                names = rownames(pars),
+                cost_function = par$metric
               )
             )
     },
