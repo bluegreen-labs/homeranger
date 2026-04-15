@@ -116,6 +116,7 @@ structTrajectory launchTrajectoryCoordinates(
         int n_cells_mem
 );
 
+// matrix forwarding from memory, no file reads
 structTrajectory launchTrajectoryCoordinatesMat(
         arma::mat locations,
         double resolution,
