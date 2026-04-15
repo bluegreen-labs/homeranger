@@ -6,6 +6,7 @@
 #ifndef HEADER_H_
 #define HEADER_H_
 
+#include <RcppArmadillo.h>
 #include    <stdlib.h>
 #include    <cmath>
 #include    <math.h>
@@ -115,13 +116,18 @@ structTrajectory launchTrajectoryCoordinates(
         int n_cells_mem
 );
 
-structSummaryTraj getTrajectoryMetrics(structTrajectory loadedTraj);
-
-void joinTrajectoryLandscape(
-        std::string output_directory,
-        structTrajectory & loadedTraj,
-        double** resource_selection_array
+// matrix forwarding from memory, no file reads
+structTrajectory launchTrajectoryCoordinatesMat(
+        arma::mat locations,
+        double resolution,
+        double min_x,
+        double min_y,
+        int n_row,
+        int n_col,
+        int n_cells_mem
 );
+
+structSummaryTraj getTrajectoryMetrics(structTrajectory loadedTraj);
 
 // kernels.cpp
 lookupTable iniApproxKernel (
@@ -133,6 +139,7 @@ lookupTable iniApproxKernel (
 lookupTable iniApproxKernelStepLength (
         double distance_threshold,
         double resolution,
+        double n_bins,
         double spatial_decay,
         double shape,
         double residence_p

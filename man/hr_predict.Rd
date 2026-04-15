@@ -11,6 +11,7 @@ hr_predict(
   resolution,
   steps = 1,
   runs = 1,
+  keep_start = TRUE,
   optimization = FALSE,
   verbose = TRUE
 )
@@ -27,6 +28,9 @@ hr_predict(
 \item{steps}{number of steps to simulate}
 
 \item{runs}{number of runs to simulate}
+
+\item{keep_start}{keep the starting position in the output data (this is
+run 0 and only has one coordinate, the release point)}
 
 \item{optimization}{optimization trigger (only used in debugging, set to FALSE)}
 

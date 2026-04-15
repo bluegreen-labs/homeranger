@@ -1,10 +1,19 @@
-# a 100 runs on the latest install
+# reference speed test for optimization of
+# a 1000 runs on the reference version v0.4
+# run in a terminal in a clean R session
+# i.e. not in any IDE with an R project
 #
 # run time depends on the system:
 # on reference system 45 - 60s
 
-if(as.numeric(packageDescription("homeranger")$Version) <= 0.4){
- stop("Install the latest release or rebuild package")
+if(packageVersion("homeranger") != "0.4"){
+  try(detach("package:homeranger", unload = TRUE))
+  try(remove.packages("homeranger", lib = "~/R/x86_64-pc-linux-gnu-library/4.5"))
+  remotes::install_github(
+    "bluegreen-labs/homeranger@v0.4",
+    upgrade = "never",
+    quiet = TRUE
+  )
 }
 
 library(homeranger)
@@ -42,15 +51,11 @@ params <- list(
   )
 )
 
-obs <- read.csv("data-raw/tracks/Aspromonte_roedeer_traj.txt") |>
-  dplyr::filter(animal_id == 1196) |>
-  as.matrix()
-
 # calibrate the model and optimize free parameters
 # for only ONE individual!!
 pars <- hr_fit(
     data = raster_maps,
-    obs = obs,
+    obs = "data-raw/tracks/Aspromonte_roedeer_traj_1196.txt",
     par = params,
     resolution = 25,
     parallel = FALSE

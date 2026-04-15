@@ -27,7 +27,7 @@ using namespace arma;
 List home_range_cpp(
     arma::cube data,
     List par,
-    std::string trajectoryPath,
+    arma::mat locations,
     int resolution,
     int nSimulatedSteps,
     int nSimulatedRuns,
@@ -48,7 +48,6 @@ List home_range_cpp(
   int lagR, lagC, lagRmem, lagCmem;
   int looktableR, looktableC;
   double weightR, weightW;
-  // int focusPatchX=0, focusPatchY=0;
   int nRows, nCols;
 
   // get arena rows and columns
@@ -135,6 +134,7 @@ List home_range_cpp(
   lookupTable stepLengthKernel = iniApproxKernelStepLength(
     thresholdApproxKernel[0],
     resolution,
+    500,
     stepLengthDist[0],
     stepLengthShape[0],
     0
@@ -160,8 +160,9 @@ List home_range_cpp(
   }
 
   // loading trajectory files
-  structTrajectory Traj=launchTrajectoryCoordinates(
-    trajectoryPath,
+  structTrajectory Traj=launchTrajectoryCoordinatesMat(
+    locations,
+    //trajectoryPath,
     resolution,
     0,
     0,
@@ -193,7 +194,7 @@ List home_range_cpp(
 
   double sumAttractionVectors,randNumber;
   int totalCount;
-  totalCount=-1;
+  totalCount = -1;
   rowCount=-1;
   lagR=0;
   lagC=0;
@@ -211,10 +212,7 @@ List home_range_cpp(
     // RELOCATION LOOP (from release to 2nd from last point)
     for(ite=0;ite<TrajMetrics.individualCount[ind]-1;ite++){
 
-      rowCount=rowCount+1;
-
-      // simulation only
-      totalCount=totalCount+1;
+      rowCount = rowCount + 1;
 
       currentCol=Traj.col[rowCount];
       currentRow=Traj.row[rowCount];
@@ -318,33 +316,24 @@ List home_range_cpp(
             }
           } // nextCol section
         } // only during optimization (if clause)
-
       } // currentCol section
-
-      if(!optimization){
-        // 3. Update total trajectory
-        totalTraj.animalId.push_back(TrajMetrics.animalId[ind]);
-        totalTraj.run.push_back(0);
-        totalTraj.col.push_back(currentCol);
-        totalTraj.row.push_back(currentRow);
-      }
-
     }  // individual
 
-    rowCount=rowCount+1;
-
+    // PART 2: SIMULATIONS!
     if(!optimization){
-      // PART 2: SIMULATIONS!
-      //rowCount=rowCount+1;
-      totalCount=totalCount+1;
+      rowCount = rowCount + 1;
+
       totalTraj.animalId.push_back(TrajMetrics.animalId[ind]);
       totalTraj.run.push_back(0);
       totalTraj.col.push_back(Traj.col[rowCount]);
       totalTraj.row.push_back(Traj.row[rowCount]);
 
+      totalCount = totalCount + 1;
+
       // Save info for re-initializing runs
-      releaseCol=totalTraj.col[totalCount];
-      releaseRow=totalTraj.row[totalCount];
+      releaseCol = totalTraj.col[totalCount];
+      releaseRow = totalTraj.row[totalCount];
+
       double** memoriesRefIni;
       double** memoriesWorkIni;
       initialize2D_call(memoriesRefIni,Arena.nRows,Arena.nCols);
@@ -358,41 +347,43 @@ List home_range_cpp(
       }
 
       // LOOPS
-      for(int run=1;run<=nSimulatedRuns;run++){
-        for(ite=0;ite<nSimulatedSteps;ite++){
+      for(int run = 1; run <= nSimulatedRuns; run++ ){
+        for(ite = 0; ite < nSimulatedSteps; ite++ ){
           // Ensures that the first point is the release coordinate
           // not the last point of the previous run!
           if(ite==0){
-            currentCol=releaseCol;
-            currentRow=releaseRow;
+
+            currentCol = releaseCol;
+            currentRow = releaseRow;
 
             // re-update memory
-            for(int r=0;r<Arena.nRows;r++)
-            {
-              for(int c=0;c<Arena.nCols;c++)
-              {
-                Arena.arrayMemoriesRef[r][c]=memoriesRefIni[r][c];
-                Arena.arrayMemoriesWork[r][c]=memoriesWorkIni[r][c];
+            for(int r=0;r<Arena.nRows;r++){
+              for(int c=0;c<Arena.nCols;c++){
+                Arena.arrayMemoriesRef[r][c] = memoriesRefIni[r][c];
+                Arena.arrayMemoriesWork[r][c] = memoriesWorkIni[r][c];
               }
             }
-          }
-          else
-          {
-            currentCol=totalTraj.col[totalCount];
-            currentRow=totalTraj.row[totalCount];
+          } else {
+
+            currentCol = totalTraj.col[totalCount];
+            currentRow = totalTraj.row[totalCount];
+            //currentCol = totalTraj.col[totalTraj.col.size()];
+            //currentRow = totalTraj.row[totalTraj.col.size()];
           }
 
-          minR=currentRow-stepLengthKernel.nCells;
-          maxR=currentRow+stepLengthKernel.nCells+1;
-          minC=currentCol-stepLengthKernel.nCells;
-          maxC=currentCol+stepLengthKernel.nCells+1;
-          minRmem=currentRow-r_memoryKernel.nCells;
-          maxRmem=currentRow+r_memoryKernel.nCells+1;
-          minCmem=currentCol-r_memoryKernel.nCells;
-          maxCmem=currentCol+r_memoryKernel.nCells+1;
+          minR = currentRow - stepLengthKernel.nCells;
+          maxR = currentRow + stepLengthKernel.nCells + 1;
+          minC = currentCol - stepLengthKernel.nCells;
+          maxC = currentCol + stepLengthKernel.nCells + 1;
+          minRmem = currentRow - r_memoryKernel.nCells;
+          maxRmem = currentRow + r_memoryKernel.nCells + 1;
+          minCmem = currentCol - r_memoryKernel.nCells;
+          maxCmem = currentCol + r_memoryKernel.nCells + 1;
 
           // Corrections to make sure the kernels do not go beyond the study area
-          lagR=0;lagC=0;
+          lagR=0;
+          lagC=0;
+
           if(minR<0){lagR=minR;minR=0;}
           if(maxR>Arena.nRows){maxR=Arena.nRows;}
           if(minC<0){lagC=minC;minC=0;}
@@ -403,7 +394,6 @@ List home_range_cpp(
           if(minCmem<0){lagCmem=minCmem;minCmem=0;}
           if(maxCmem>Arena.nCols){maxCmem=Arena.nCols;}
 
-
           // 1. Memory dynamics
           for(int r=0;r<Arena.nRows;r++){
             for(int c=0;c<Arena.nCols;c++){
@@ -411,6 +401,7 @@ List home_range_cpp(
               Arena.arrayMemoriesWork[r][c]=Arena.arrayMemoriesWork[r][c]*memoryWD_cplm;
             }
           }
+
           // At cells within neighborhood...
           for(int r=minRmem;r<maxRmem;r++){
             looktableR=r-minRmem-lagRmem;
@@ -446,7 +437,7 @@ List home_range_cpp(
               Arena.arrayAttractionWeight[r][c]=stepLengthKernel.vals[looktableR][looktableC]*
                 (Arena.arrayResourceSelection[r][c]*(familiarity+1));
 
-              sum_weights=sum_weights+Arena.arrayAttractionWeight[r][c];
+              sum_weights = sum_weights + Arena.arrayAttractionWeight[r][c];
             }
           }
 
@@ -463,7 +454,6 @@ List home_range_cpp(
           }
 
           // 3. Calculate random step
-          //randNumber=drand48()*sum_weights;
           randNumber=R::runif(0,1) * sum_weights;
 
           // reset value every time
@@ -485,14 +475,18 @@ List home_range_cpp(
           }
 
           // 4. Write simulated point
-          totalCount=totalCount+1;
           totalTraj.animalId.push_back(TrajMetrics.animalId[ind]);
           totalTraj.run.push_back(run);
           totalTraj.col.push_back(nextCol);
           totalTraj.row.push_back(nextRow);
 
+          // keep track of how many points written
+          totalCount = totalCount + 1;
+
         }
       }
+    } else {
+      rowCount = rowCount + 1;
     }
 
   } // number of animals loop

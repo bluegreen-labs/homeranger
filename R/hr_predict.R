@@ -9,6 +9,8 @@
 #' @param resolution resolution of the underlying maps (grid)
 #' @param steps number of steps to simulate
 #' @param runs number of runs to simulate
+#' @param keep_start keep the starting position in the output data (this is
+#'  run 0 and only has one coordinate, the release point)
 #' @param optimization optimization trigger (only used in debugging, set to FALSE)
 #' @param verbose provide feedback on the command line (default = TRUE)
 #'
@@ -22,6 +24,7 @@ hr_predict <- function(
   resolution,
   steps = 1,
   runs = 1,
+  keep_start = TRUE,
   optimization = FALSE,
   verbose = TRUE
 ){
@@ -34,7 +37,7 @@ hr_predict <- function(
   output <- home_range_cpp(
     data = data,
     par = par,
-    trajectoryPath = obs,
+    locations = obs,
     resolution = resolution,
     nSimulatedSteps = steps,
     nSimulatedRuns = runs,
@@ -45,6 +48,13 @@ hr_predict <- function(
   # if returning the log likelihood from an optimization
   # run return this early
   if (!optimization){
+
+    # filter out the first run, i.e. the
+    # starting position of the simulation
+    if(!keep_start){
+      output$locations <- output$locations |>
+        dplyr::filter(run != 0)
+    }
 
     # set -9999 values to NA
     output$locations[output$locations == -9999] <- NA

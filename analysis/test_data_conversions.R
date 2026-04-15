@@ -1,5 +1,17 @@
 library(terra)
 library(sf)
+library(homeranger)
+library(dplyr)
+source("R/hr_xy.R")
+source("R/hr_predict.R")
+
+r <- terra::rast("analysis/test_asc.tif")
+r_row <- nrow(r)
+r_col <- ncol(r)
+res <- res(r)[1]
+
+p <-read.csv("data-raw/tracks/Aspromonte_roedeer_traj.txt") |>
+  dplyr::rename(id = "animal_id")
 
 # specify the parameters as used in the default run
 # this is would be config_best_Mmem_fitting.txt
@@ -28,24 +40,32 @@ params <- list(
   )
 )
 
-# read in cleaned and regularized bio-logging observations in
-# lon/lat
+r <- terra::rast("analysis/test_asc.tif")
+res <- terra::res(r)[1]
+r <- as.array(subset(r, names(params$coef)))
+r[is.na(r)] <- 0
 
-track <-read.csv("data-raw/tracks/regularized_data_final.csv", sep = ";") |>
-  na.omit() |>
-  sf::st_as_sf(coords = c("x", "y"), crs = "EPSG:4326")
+# run the model for these parameters
+# in optimization mode (to check a traceable output)
+# there should be ~parity as this is deterministic
+output <- hr_predict(
+    data = r,
+    par = params,
+    obs = as.matrix(p),
+    steps = 1,
+    runs = 1,
+    resolution = res,
+    optimization = TRUE,
+    verbose = TRUE
+)$likelihood
 
-# calculate bounding box around track
-track_bbox <- track |>
-  sf::st_transform(4326) |>
-  sf::st_bbox() |>
-  sf::st_as_sfc() |>
-  sf::st_buffer(dist = units::as_units(20,"km"))
+# read in the reference data, these are calculated with the
+# shared original code and provide the step based likelihoods
+# this output should match the output of the package for parity
+reference <- read.csv("data-raw/validation/objective_function_detail.csv")$likelihood
+reference[reference == -9999] <- NA
 
-source("R/helpers.R")
-source("R/hr_regularize.R")
-source("R/hr_xy.R")
-source("R/hr_dl_maps.R")
-
-#hr_dl_maps(track, path = "analysis/")
-hr_regularize(track = track, path = "analysis/test.tif")
+# plot the 1:1 graph - should be spot on
+output[output == -9999] <- NA
+plot(output, reference)
+abline(0,1)

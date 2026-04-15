@@ -18,7 +18,7 @@
 #'  (cost function)
 NULL
 
-home_range_cpp <- function(data, par, trajectoryPath, resolution, nSimulatedSteps, nSimulatedRuns, optimization, verbose) {
-    .Call(`_homeranger_home_range_cpp`, data, par, trajectoryPath, resolution, nSimulatedSteps, nSimulatedRuns, optimization, verbose)
+home_range_cpp <- function(data, par, locations, resolution, nSimulatedSteps, nSimulatedRuns, optimization, verbose) {
+    .Call(`_homeranger_home_range_cpp`, data, par, locations, resolution, nSimulatedSteps, nSimulatedRuns, optimization, verbose)
 }
 

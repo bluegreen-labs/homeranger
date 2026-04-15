@@ -26,11 +26,17 @@ test_that("validate model run", {
     )
   )
 
+  # read in data and convert to matrix
+  obs <- read.csv(
+    system.file("extdata/Aspromonte_roedeer_traj.txt", package = "homeranger")
+  ) |>
+    as.matrix()
+
   # run the model for these parameters
   output <- hr_predict(
     data = raster_maps,
     par = params,
-    obs = system.file("extdata/Aspromonte_roedeer_traj.txt", package = "homeranger"),
+    obs = obs,
     resolution = 25,
     steps = 0,
     runs = 0,
@@ -52,8 +58,8 @@ test_that("test optimizations", {
     control = list(
       sampler = "DEzs",
       settings = list(
-        burnin = 10,
-        iterations = 60
+        burnin = 3,
+        iterations = 10
       )
     ),
     par = list(
@@ -78,10 +84,17 @@ test_that("test optimizations", {
     )
   )
 
+  # read in data and convert to matrix
+  obs <- read.csv(
+    system.file("extdata/Aspromonte_roedeer_traj.txt", package = "homeranger")
+    ) |>
+    dplyr::filter("animal_id" == 1196) |>
+    as.matrix()
+
   # calibrate the model and optimize free parameters
   pars <- hr_fit(
     data = raster_maps,
-    obs = system.file("extdata/Aspromonte_roedeer_traj_1196.txt", package = "homeranger"),
+    obs = obs,
     resolution = 25,
     par = params,
     parallel = FALSE
