@@ -36,14 +36,14 @@ hr_xy <- function(
   if (method == "exact"){
 
     # extract resolution from map meta-data
-    res <- terra::res(map)
+    #res <- terra::res(map)
 
     # extract XY coordinates
     p <- terra::extract(map, track, xy = TRUE) |>
       dplyr::mutate(
         id = track$id,
-        x = floor(terra::colFromX(map, .data$x) * res),
-        y = floor((nrow(map) - terra::rowFromY(map, .data$y)) * res)
+        x = floor(terra::colFromX(map, .data$x)), # * res for original
+        y = floor((nrow(map) - terra::rowFromY(map, .data$y)))
       ) |>
       dplyr::select(
         "id",
@@ -62,10 +62,41 @@ hr_xy <- function(
     )
   }
 
-  # write to file
-  filename <- file.path(tempdir(), "track.csv")
-  utils::write.csv(p, file = filename, row.names = FALSE)
+  # # create index values and start and stop
+  # # positions
+  # p <- p |>
+  #   dplyr::mutate(
+  #     row_idx = 1:n()
+  #   ) |>
+  #   dplyr::group_by(.data$id) |>
+  #   dplyr::mutate(
+  #     id_start = min(row_idx) - 1, # zero indexed in C++
+  #     id_end = max(row_idx) - 1
+  #   )
+  #
+  # m <- p |> dplyr::group_by(.data$id) |>
+  #   dplyr::summarize(
+  #     nr_locations = n(),
+  #     start = id_start[1],
+  #     end = id_end[1]
+  #   ) |>
+  #   dplyr::arrange(
+  #     .data$start
+  #   )
+  #
+  # # create additional legacy parameters
+  # # such as included map dimensions
+  # output <- list(
+  #   locations = data.frame(
+  #     p,
+  #     min_row = 0,
+  #     max_row = nrow(map),
+  #     min_col = 0,
+  #     max_col = ncol(map)
+  #   ),
+  #   metrics = m
+  # )
 
-  # return list of coordinates
-  return(filename)
+  # return output
+  return(p)
 }
