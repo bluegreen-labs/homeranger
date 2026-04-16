@@ -99,27 +99,16 @@ void arena_cleanup(ArraysDynamics & inputArrays);
 void lookuptable_cleanup(lookupTable & inputArrays);
 
 void initialize2D(double** & vector, int nR, int nC);
+
 ArraysDynamics launchArena(
         int nRow,
         int nCol
 );
-void initialize2D_call(double** & vector, int nR, int nC);
 
 // Import_traj.cpp
-structTrajectory launchTrajectoryCoordinates(
-        std::string path,
-        double resolution,
-        double min_x,
-        double min_y,
-        int n_row,
-        int n_col,
-        int n_cells_mem
-);
-
 // matrix forwarding from memory, no file reads
 structTrajectory launchTrajectoryCoordinatesMat(
         arma::mat locations,
-        double resolution,
         double min_x,
         double min_y,
         int n_row,

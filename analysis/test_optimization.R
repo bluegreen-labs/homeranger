@@ -9,6 +9,7 @@ if(as.numeric(packageDescription("homeranger")$Version) <= 0.4){
 
 library(homeranger)
 library(terra)
+library(dplyr)
 
 load(system.file("extdata/raster_maps.rda", package = "homeranger"))
 
@@ -17,7 +18,7 @@ params <- list(
   control = list(
     sampler = "DEzs",
     settings = list(
-      iterations = 1000
+      iterations = 100
     )
   ),
   par = list(
@@ -44,6 +45,12 @@ params <- list(
 
 obs <- read.csv("data-raw/tracks/Aspromonte_roedeer_traj.txt") |>
   dplyr::filter(animal_id == 1196) |>
+  dplyr::mutate(across(where(is.numeric), ~na_if(., -9999))) |>
+  dplyr::mutate(
+    x = as.integer(x / 25),
+    y = as.integer(1200 - (y / 25))
+  ) |>
+  dplyr::mutate(across(where(is.numeric), ~tidyr::replace_na(., -9999))) |>
   as.matrix()
 
 # calibrate the model and optimize free parameters
@@ -53,7 +60,7 @@ pars <- hr_fit(
     obs = obs,
     par = params,
     resolution = 25,
-    parallel = FALSE
+    parallel = TRUE
 )
 
 # plot the parameter distributions

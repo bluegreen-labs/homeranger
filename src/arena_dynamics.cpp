@@ -10,15 +10,6 @@ void initialize2D(double** & vector, int nR, int nC)
   }
 }
 
-void initialize2D_call(double** & vector, int nR, int nC)
-{
-  vector = new double*[nR];
-  for (int i = 0; i < nR; i++)
-  {
-    vector[i] = new double[nC];
-  }
-}
-
 // Resets the spatial landscapes (memory and attraction) -- to be ran between animals
 void arena_renewal(ArraysDynamics & input_arrays, int focPatchX, int focPatchY)
 {
@@ -53,8 +44,7 @@ void lookuptable_cleanup(lookupTable & dynamics)
 }
 
 // Resets the spatial landscapes (memory and attraction)
-void arena_cleanup(ArraysDynamics & dynamics)
-{
+void arena_cleanup(ArraysDynamics & dynamics){
   // 1. Deallocate the inner arrays (the columns) for each row
   for (int i = 0; i < dynamics.nRows; ++i) {
     delete[] dynamics.arrayMemoriesWork[i];
@@ -72,7 +62,6 @@ void arena_cleanup(ArraysDynamics & dynamics)
 
 // If the structure itself was allocated on the heap:
 // delete dynamicsPtr; // Deallocate the structure itself
-
 // Reads the spatial rasters and creates the spatial environment
 ArraysDynamics launchArena(
     int nRows,

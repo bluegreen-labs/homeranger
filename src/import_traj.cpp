@@ -3,7 +3,6 @@
 // Imports the trajectories -- transform continuous coordinates into discrete patch ID
 structTrajectory launchTrajectoryCoordinatesMat(
         arma::mat locations,
-        double resolution,
         double min_x,
         double min_y,
         int n_row,
@@ -54,28 +53,10 @@ structTrajectory launchTrajectoryCoordinatesMat(
             returnValues.animalId.push_back(ind);
 
             col=cols[r];
-            if(col==-9999)
-            {
-                returnValues.col.push_back((int)col);
-            }
-            else
-            {
-                ratio_position_x=(col-min_x)/resolution;
-                ratio_int_position_x=(int) ratio_position_x;
-                returnValues.col.push_back(ratio_int_position_x);
-            }
-
             row=rows[r];
-            if(row==-9999)
-            {
-                returnValues.row.push_back((int)row);
-            }
-            else
-            {
-                ratio_position_y=(row-min_y)/resolution;;
-                ratio_int_position_y=(int) ceil(ratio_position_y);
-                returnValues.row.push_back(n_row-ratio_int_position_y);
-            }
+
+            returnValues.col.push_back((int)col);
+            returnValues.row.push_back((int)row);
 
             // Definition of the animal's bounding box
             if(new_animal==true)
@@ -89,7 +70,6 @@ structTrajectory launchTrajectoryCoordinatesMat(
             {
                 if(col!=-9999)
                 {
-
                     if((returnValues.col[counter-1]-n_cells_mem)<returnValues.minColMem[counter-2])
                     {
                         returnValues.minColMem[counter-1]=returnValues.col[counter-1]-n_cells_mem;

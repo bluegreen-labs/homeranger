@@ -1,4 +1,4 @@
-#' Download and regularize spatial data for model input
+#' Create spatial driver data for model input
 #'
 #' Regularizes spatial input data to a common equal area grid. It also performs
 #' sanity checks on the inputs to check if observations cover the spatial grid.
@@ -25,7 +25,7 @@
 #'  the used projection crs
 #' @export
 
-hr_regularize <- function(
+hr_drivers <- function(
   track,
   crs = "EPSG:3035",
   buffer = 7,
