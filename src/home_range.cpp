@@ -18,10 +18,12 @@
 // [[Rcpp::depends(RcppArmadillo)]]
 
 #include "header.h"
+#include <chrono>
 
 using namespace Rcpp;
 using namespace std;
 using namespace arma;
+
 
 // [[Rcpp::export]]
 List home_range_cpp(
@@ -160,10 +162,8 @@ List home_range_cpp(
   }
 
   // loading trajectory files
-  structTrajectory Traj=launchTrajectoryCoordinatesMat(
+  structTrajectory Traj = launchTrajectoryCoordinatesMat(
     locations,
-    //trajectoryPath,
-    resolution,
     0,
     0,
     nRows,
@@ -194,6 +194,7 @@ List home_range_cpp(
 
   double sumAttractionVectors,randNumber;
   int totalCount;
+  int rstart, rend, cstart, cend;
   totalCount = -1;
   rowCount=-1;
   lagR=0;
@@ -210,111 +211,128 @@ List home_range_cpp(
 
     // START OF RELOCATION ITERATIONS
     // RELOCATION LOOP (from release to 2nd from last point)
-    for(ite=0;ite<TrajMetrics.individualCount[ind]-1;ite++){
+    for(ite = 0; ite < TrajMetrics.individualCount[ind] - 1; ite++){
 
       rowCount = rowCount + 1;
+      currentCol = Traj.col[rowCount];
+      currentRow = Traj.row[rowCount];
 
-      currentCol=Traj.col[rowCount];
-      currentRow=Traj.row[rowCount];
-      nextCol=Traj.col[rowCount+1];
-      nextRow=Traj.row[rowCount+1];
+      nextCol = Traj.col[rowCount + 1];
+      nextRow = Traj.row[rowCount + 1];
 
       if(optimization){
-        minR=currentRow-stepLengthKernel.nCells;
-        maxR=currentRow+stepLengthKernel.nCells+1;
-        minC=currentCol-stepLengthKernel.nCells;
-        maxC=currentCol+stepLengthKernel.nCells+1;
+        minR = currentRow - stepLengthKernel.nCells;
+        maxR = currentRow + stepLengthKernel.nCells + 1;
+        minC = currentCol - stepLengthKernel.nCells;
+        maxC = currentCol + stepLengthKernel.nCells + 1;
+
+        // check boundary conditions
+        if(minR < 0){lagR = minR; minR = 0;}
+        if(maxR > Arena.nRows){maxR = Arena.nRows;}
+        if(minC < 0){lagC = minC; minC = 0;}
+        if(maxC > Arena.nCols){maxC = Arena.nCols;}
       }
 
-      minRmem=currentRow-r_memoryKernel.nCells;
-      maxRmem=currentRow+r_memoryKernel.nCells+1;
-      minCmem=currentCol-r_memoryKernel.nCells;
-      maxCmem=currentCol+r_memoryKernel.nCells+1;
+      minRmem = currentRow - r_memoryKernel.nCells;
+      maxRmem = currentRow + r_memoryKernel.nCells + 1;
+      minCmem = currentCol - r_memoryKernel.nCells;
+      maxCmem = currentCol + r_memoryKernel.nCells + 1;
 
-      // simulation
-      // Corrections to make sure the kernels do not go beyond the study area
-      // from predictions NEW
-      if (!optimization){
-        lagRmem=0;
-        lagCmem=0;
-        if(minRmem<0){lagRmem=minRmem;minRmem=0;}
-        if(maxRmem>Arena.nRows){maxRmem=Arena.nRows;}
-        if(minCmem<0){lagCmem=minCmem;minCmem=0;}
-        if(maxCmem>Arena.nCols){maxCmem=Arena.nCols;}
-      }
+      // check boundary conditions
+      lagRmem = 0;
+      lagCmem = 0;
+      if(minRmem < 0){lagRmem = minRmem; minRmem = 0;}
+      if(maxRmem > Arena.nRows){maxRmem = Arena.nRows;}
+      if(minCmem < 0){lagCmem = minCmem; minCmem = 0;}
+      if(maxCmem > Arena.nCols){maxCmem = Arena.nCols;}
 
       // 1. Memory dynamics
-      // At all cells within animal's bounding box...
-      for(int r=Traj.minRowMem[rowCount];r<=Traj.maxRowMem[rowCount];r++){
-        for(int c=Traj.minColMem[rowCount];c<=Traj.maxColMem[rowCount];c++){
-          //"full" memory decay
-          Arena.arrayMemoriesRef[r][c]=Arena.arrayMemoriesRef[r][c]*memoryRD_cplm;
-          Arena.arrayMemoriesWork[r][c]=Arena.arrayMemoriesWork[r][c]*memoryWD_cplm;
+      //"full" memory decay
+      rstart = Traj.minRowMem[rowCount];
+      rend = Traj.maxRowMem[rowCount];
+      cstart = Traj.minColMem[rowCount];
+      cend = Traj.maxColMem[rowCount];
+
+      if(rstart < 0){rstart = 0;}
+      if(rend > Arena.nRows){rend = Arena.nRows;}
+      if(cstart < 0){cstart = 0;}
+      if(cend > Arena.nCols){cend = Arena.nCols;}
+
+      for(int r = rstart; r < rend; r++){
+        for(int c = cstart; c < cend; c++){
+          Arena.arrayMemoriesRef[r][c] = Arena.arrayMemoriesRef[r][c] * memoryRD_cplm;
+          Arena.arrayMemoriesWork[r][c] = Arena.arrayMemoriesWork[r][c] * memoryWD_cplm;
         }
       }
 
       // If current timestep has valid coordinates
-      if(currentCol!=-9999){
+      if(currentCol != -9999){
+
         // At cells within neighborhood...
-        for(int r=minRmem;r<maxRmem;r++){
+        for(int r = minRmem; r < maxRmem; r++){
 
           if(!optimization){
-            looktableR=r-minRmem-lagRmem;
+            looktableR = r - minRmem - lagRmem;
           } else {
-            looktableR=r-minRmem;
+            looktableR = r - minRmem;
           }
 
-          for(int c=minCmem;c<maxCmem;c++){
+          for(int c = minCmem; c < maxCmem; c++){
 
             if(!optimization){
-              looktableC=c-minCmem-lagCmem;
+              looktableC = c - minCmem - lagCmem;
             } else {
-              looktableC=c-minCmem;
+              looktableC = c - minCmem;
             }
 
-            weightR=r_memoryKernel.vals[looktableR][looktableC];
-            weightW=w_memoryKernel.vals[looktableR][looktableC];
+            weightR = r_memoryKernel.vals[looktableR][looktableC];
+            weightW = w_memoryKernel.vals[looktableR][looktableC];
 
             // reverse "full decay"
-            Arena.arrayMemoriesRef[r][c]=Arena.arrayMemoriesRef[r][c]/memoryRD_cplm;
-            Arena.arrayMemoriesWork[r][c]=Arena.arrayMemoriesWork[r][c]/memoryWD_cplm;
+            Arena.arrayMemoriesRef[r][c] = Arena.arrayMemoriesRef[r][c] / memoryRD_cplm;
+            Arena.arrayMemoriesWork[r][c] = Arena.arrayMemoriesWork[r][c] / memoryWD_cplm;
 
-            Arena.arrayMemoriesRef[r][c]=Arena.arrayMemoriesRef[r][c]-
-              (1-weightR)*Arena.arrayMemoriesRef[r][c]*memoryRD[0]+
-              weightR*memoryRL[0];
+            Arena.arrayMemoriesRef[r][c] = Arena.arrayMemoriesRef[r][c] -
+              (1 - weightR) * Arena.arrayMemoriesRef[r][c] * memoryRD[0] +
+              weightR * memoryRL[0];
 
-            Arena.arrayMemoriesWork[r][c]=Arena.arrayMemoriesWork[r][c]-
-              (1-weightW)*Arena.arrayMemoriesWork[r][c]*memoryWD[0]+
-              weightW*memoryWL[0];
+            Arena.arrayMemoriesWork[r][c] = Arena.arrayMemoriesWork[r][c] -
+              (1 - weightW) * Arena.arrayMemoriesWork[r][c] * memoryWD[0] +
+              weightW * memoryWL[0];
           }
         }
 
-        // If next timestep has valid coordinates
+        // If next time step has valid coordinates
         // seems to be optimization only, check redundancy with
         // kernel check above
         if(optimization){
-          if(nextCol!=-9999){
-            // 2. Calculate movement probability
-            sum_weights=0.0;
-            for(int r=minR;r<maxR;r++){
-              looktableR=r-minR;
+          if(nextCol != -9999){
 
-              for(int c=minC;c<maxC;c++){
-                looktableC=c-minC;
-                familiarity=Arena.arrayMemoriesRef[r][c] - Arena.arrayMemoriesWork[r][c];
-                Arena.arrayAttractionWeight[r][c]=stepLengthKernel.vals[looktableR][looktableC]*
-                  (Arena.arrayResourceSelection[r][c]*(familiarity + 1));
+            // 2. Calculate movement probability
+            sum_weights = 0.0;
+            for(int r = minR; r < maxR; r++){
+              looktableR = r - minR;
+
+              for(int c = minC; c < maxC; c++){
+                looktableC = c - minC;
+
+                familiarity = Arena.arrayMemoriesRef[r][c] - Arena.arrayMemoriesWork[r][c];
+
+                Arena.arrayAttractionWeight[r][c] = stepLengthKernel.vals[looktableR][looktableC] *
+                  (Arena.arrayResourceSelection[r][c] * (familiarity + 1));
+
                 sum_weights = sum_weights + Arena.arrayAttractionWeight[r][c];
               }
             }
 
             // 3. Calculate step likelihood
-            if(sum_weights>0){
-              Traj.likelihood[rowCount]=log(Arena.arrayAttractionWeight[nextRow][nextCol]/sum_weights);
+            if(sum_weights > 0){
+              Traj.likelihood[rowCount] = log(Arena.arrayAttractionWeight[nextRow][nextCol] / sum_weights);
             } else {
-              Traj.likelihood[rowCount]=log(Arena.arrayAttractionWeight[nextRow][nextCol]);
+              Traj.likelihood[rowCount] = log(Arena.arrayAttractionWeight[nextRow][nextCol]);
             }
-          } // nextCol section
+
+          }// nextCol section
         } // only during optimization (if clause)
       } // currentCol section
     }  // individual
@@ -336,13 +354,13 @@ List home_range_cpp(
 
       double** memoriesRefIni;
       double** memoriesWorkIni;
-      initialize2D_call(memoriesRefIni,Arena.nRows,Arena.nCols);
-      initialize2D_call(memoriesWorkIni,Arena.nRows,Arena.nCols);
+      initialize2D(memoriesRefIni,Arena.nRows,Arena.nCols);
+      initialize2D(memoriesWorkIni,Arena.nRows,Arena.nCols);
 
       for(int r=0;r<Arena.nRows;r++){
         for(int c=0;c<Arena.nCols;c++){
-          memoriesRefIni[r][c]=Arena.arrayMemoriesRef[r][c];
-          memoriesWorkIni[r][c]=Arena.arrayMemoriesWork[r][c];
+          memoriesRefIni[r][c] = Arena.arrayMemoriesRef[r][c];
+          memoriesWorkIni[r][c] = Arena.arrayMemoriesWork[r][c];
         }
       }
 
@@ -367,8 +385,6 @@ List home_range_cpp(
 
             currentCol = totalTraj.col[totalCount];
             currentRow = totalTraj.row[totalCount];
-            //currentCol = totalTraj.col[totalTraj.col.size()];
-            //currentRow = totalTraj.row[totalTraj.col.size()];
           }
 
           minR = currentRow - stepLengthKernel.nCells;
@@ -500,6 +516,7 @@ List home_range_cpp(
   lookuptable_cleanup(stepLengthKernel);
   lookuptable_cleanup(r_memoryKernel);
   lookuptable_cleanup(w_memoryKernel);
+
 
   if(verbose){
     end = std::chrono::high_resolution_clock::now();
