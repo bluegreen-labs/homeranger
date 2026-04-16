@@ -16,10 +16,10 @@ file.copy(files, bin_path, overwrite = TRUE)
 
 # read config file
 # kernel fitting
-#config_file <- "./data-raw/config/config_best_Mmem_fitting.txt"
+config_file <- "./data-raw/config/config_best_Mmem_fitting.txt"
 
 # model simulation
-config_file <- "./data-raw/config/config_best_Mmem_simulation_1y.txt"
+#config_file <- "./data-raw/config/config_best_Mmem_simulation_1y.txt"
 
 # set config to use
 config <- read.delim(config_file, sep = ";", header = TRUE)
@@ -83,6 +83,3 @@ if(config$value[4] == "true"){
 
   plot(p)
 }
-
-
-
