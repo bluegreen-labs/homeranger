@@ -3,6 +3,8 @@
 load(system.file("extdata/raster_maps.rda", package = "homeranger"))
 load(system.file("extdata/reference_data.rda", package = "homeranger"))
 
+library(tidyr)
+
 test_that("validate model run", {
   # set parameters
   params <- list(
@@ -28,8 +30,13 @@ test_that("validate model run", {
 
   # read in data and convert to matrix
   obs <- read.csv(
-    system.file("extdata/Aspromonte_roedeer_traj.txt", package = "homeranger")
-  ) |>
+    system.file("extdata/Aspromonte_roedeer_traj.txt", package = "homeranger")) |>
+    dplyr::mutate(across(where(is.numeric), ~dplyr::na_if(., -9999))) |>
+    dplyr::mutate(
+      x = as.integer(x / 25),
+      y = as.integer(1200 - (y / 25))
+    ) |>
+    dplyr::mutate(across(where(is.numeric), ~tidyr::replace_na(., -9999))) |>
     as.matrix()
 
   # run the model for these parameters
@@ -86,9 +93,14 @@ test_that("test optimizations", {
 
   # read in data and convert to matrix
   obs <- read.csv(
-    system.file("extdata/Aspromonte_roedeer_traj.txt", package = "homeranger")
+    system.file("extdata/Aspromonte_roedeer_traj.txt", package = "homeranger")) |>
+    dplyr::filter(animal_id == 1196) |>
+    dplyr::mutate(across(where(is.numeric), ~dplyr::na_if(., -9999))) |>
+    dplyr::mutate(
+      x = as.integer(x / 25),
+      y = as.integer(1200 - (y / 25))
     ) |>
-    dplyr::filter("animal_id" == 1196) |>
+    dplyr::mutate(across(where(is.numeric), ~tidyr::replace_na(., -9999))) |>
     as.matrix()
 
   # calibrate the model and optimize free parameters

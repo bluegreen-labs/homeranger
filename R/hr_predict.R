@@ -53,7 +53,7 @@ hr_predict <- function(
     # starting position of the simulation
     if(!keep_start){
       output$locations <- output$locations |>
-        dplyr::filter(run != 0)
+        dplyr::filter(.data$run != 0)
     }
 
     # set -9999 values to NA

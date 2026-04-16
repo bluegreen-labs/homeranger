@@ -26,7 +26,6 @@ Imports:
     Rcpp (>= 1.0.14),
     rlang,
     cli,
-    utils,
     BayesianTools,
     terra,
     units,
@@ -43,6 +42,7 @@ Suggests:
     rmarkdown,
     covr,
     testthat,
+    tidyr,
     knitr
 VignetteBuilder: knitr
 Encoding: UTF-8
