@@ -25,6 +25,7 @@ Depends:
 Imports:
     Rcpp (>= 1.0.14),
     rlang,
+    utils,
     cli,
     BayesianTools,
     terra,
