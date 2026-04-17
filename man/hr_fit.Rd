@@ -18,6 +18,8 @@ output of the optimization functions (defaults to TRUE).}
 
 \item{parallel}{enable parallel processing (default = FALSE, if TRUE or the
 number of desired cores to use in processing).}
+
+\item{verbose}{provide feedback on the command line (default = FALSE)}
 }
 \value{
 A named list containing the calibrated parameter vector \code{par} and

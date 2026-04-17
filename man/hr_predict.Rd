@@ -32,8 +32,6 @@ run 0 and only has one coordinate, the release point)}
 \item{optimization}{optimization trigger (only used in debugging, set to FALSE)}
 
 \item{verbose}{provide feedback on the command line (default = TRUE)}
-
-\item{resolution}{resolution of the underlying maps (grid)}
 }
 \value{
 simulated track

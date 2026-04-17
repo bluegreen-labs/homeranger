@@ -11,6 +11,8 @@
 #'  output of the optimization functions (defaults to TRUE).
 #' @param parallel enable parallel processing (default = FALSE, if TRUE or the
 #'  number of desired cores to use in processing).
+#' @param verbose provide feedback on the command line (default = FALSE)
+#'
 #' @return A named list containing the calibrated parameter vector `par` and
 #' the output object from the optimization `mod`. For more details on this
 #' output and how to evaluate it, see \link[BayesianTools:runMCMC]{runMCMC} (also
