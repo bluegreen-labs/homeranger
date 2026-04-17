@@ -52,10 +52,9 @@ obs <- read.csv("data-raw/tracks/Aspromonte_roedeer_traj.txt") |>
 # in optimization mode (to check a traceable output)
 # there should be ~parity as this is deterministic
 output <- hr_predict(
-  data = data$data,
+  data = data,
   par = params,
   obs = obs,
-  resolution = data$resolution,
   steps = 1,
   runs = 1,
   optimization = TRUE,
