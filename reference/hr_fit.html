@@ -70,7 +70,7 @@ through hr_cost().</p>
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">hr_fit</span><span class="op">(</span><span class="va">data</span>, <span class="va">obs</span>, <span class="va">par</span>, <span class="va">resolution</span>, optim_out <span class="op">=</span> <span class="cn">TRUE</span>, parallel <span class="op">=</span> <span class="cn">FALSE</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">hr_fit</span><span class="op">(</span><span class="va">data</span>, <span class="va">obs</span>, <span class="va">par</span>, optim_out <span class="op">=</span> <span class="cn">TRUE</span>, parallel <span class="op">=</span> <span class="cn">FALSE</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -89,22 +89,18 @@ through hr_cost().</p>
 <dd><p>A list containing model calibration settings.</p></dd>
 
 
-<dt id="arg-resolution">resolution<a class="anchor" aria-label="anchor" href="#arg-resolution"></a></dt>
-<dd><p>resolution of the underlying maps (grid)</p></dd>
-
-
 <dt id="arg-optim-out">optim_out<a class="anchor" aria-label="anchor" href="#arg-optim-out"></a></dt>
 <dd><p>A logical indicating whether the function returns the raw
 output of the optimization functions (defaults to TRUE).</p></dd>
 
 
 <dt id="arg-parallel">parallel<a class="anchor" aria-label="anchor" href="#arg-parallel"></a></dt>
-<dd><p>support parallel processing</p></dd>
+<dd><p>enable parallel processing (default = FALSE, if TRUE or the
+number of desired cores to use in processing).</p></dd>
 
 
-<dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
-<dd><p>Optional arguments passed on to the cost function specified as
-<code>par$metric</code>.</p></dd>
+<dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
+<dd><p>provide feedback on the command line (default = FALSE)</p></dd>
 
 </dl></div>
     <div id="value">
