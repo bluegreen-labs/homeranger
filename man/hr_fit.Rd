@@ -4,7 +4,7 @@
 \alias{hr_fit}
 \title{Fit a home range model}
 \usage{
-hr_fit(data, obs, par, resolution, optim_out = TRUE, parallel = FALSE, ...)
+hr_fit(data, obs, par, optim_out = TRUE, parallel = FALSE, verbose = FALSE)
 }
 \arguments{
 \item{data}{A data frame with driver data.}
@@ -13,15 +13,13 @@ hr_fit(data, obs, par, resolution, optim_out = TRUE, parallel = FALSE, ...)
 
 \item{par}{A list containing model calibration settings.}
 
-\item{resolution}{resolution of the underlying maps (grid)}
-
 \item{optim_out}{A logical indicating whether the function returns the raw
 output of the optimization functions (defaults to TRUE).}
 
-\item{parallel}{support parallel processing}
+\item{parallel}{enable parallel processing (default = FALSE, if TRUE or the
+number of desired cores to use in processing).}
 
-\item{...}{Optional arguments passed on to the cost function specified as
-\code{par$metric}.}
+\item{verbose}{provide feedback on the command line (default = FALSE)}
 }
 \value{
 A named list containing the calibrated parameter vector \code{par} and

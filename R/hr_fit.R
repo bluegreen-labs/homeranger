@@ -9,10 +9,10 @@
 #' @param par A list containing model calibration settings.
 #' @param optim_out A logical indicating whether the function returns the raw
 #'  output of the optimization functions (defaults to TRUE).
-#' @param parallel support parallel processing
-#' @param resolution resolution of the underlying maps (grid)
-#' @param ... Optional arguments passed on to the cost function specified as
-#'  \code{par$metric}.
+#' @param parallel enable parallel processing (default = FALSE, if TRUE or the
+#'  number of desired cores to use in processing).
+#' @param verbose provide feedback on the command line (default = FALSE)
+#'
 #' @return A named list containing the calibrated parameter vector `par` and
 #' the output object from the optimization `mod`. For more details on this
 #' output and how to evaluate it, see \link[BayesianTools:runMCMC]{runMCMC} (also
@@ -24,11 +24,37 @@ hr_fit <- function(
     data,
     obs,
     par,
-    resolution,
     optim_out = TRUE,
     parallel = FALSE,
-    ...
+    verbose = FALSE
 ){
+
+  # this routine allows for dynamic cost function
+  # calling without too much trouble (consider deleting
+  # if not really desired to limit overhead)
+  cost <- function(settings, obs, data, resolution, names, cost_function){
+   eval(parse(text = cost_function))(
+     par = settings,
+     obs = obs,
+     data = data,
+     resolution = resolution,
+     names = names
+   )
+  }
+
+  # define likelihood function setup
+  ll <- function(X) {
+    do.call("cost",
+            list(
+              settings = X,
+              obs = obs,
+              data = data$data,
+              resolution = data$resolution,
+              names = rownames(pars),
+              cost_function = par$metric
+            )
+    )
+  }
 
   # predefine variables for CRAN check compliance
   lower <- upper <- out_optim <- NULL
@@ -38,18 +64,44 @@ hr_fit <- function(
     cli::cli_abort("missing input arguments, please check all parameters")
   }
 
-  # this routine allows for dynamic cost function
-  # calling without too much trouble (consider deleting
-  # if not really desired to limit overhead)
-  cost <- function(settings, obs, data, resolution, names, cost_function){
-   eval(cost_function)(
-     par = settings,
-     obs = obs,
-     data = data,
-     resolution = resolution,
-     names = names,
-     ...
-   )
+  if(parallel == TRUE || is.numeric(parallel)){
+
+    max_cores <- parallel::detectCores()
+
+    if(is.numeric(parallel) && (parallel < max_cores )){
+      n <- parallel
+    } else {
+      # get max number of cores
+      n <- max_cores - 1
+    }
+
+    # feedback
+    if(verbose){
+      cli::cli_alert_info("Running optimization in parallel using {n} cores!")
+    }
+
+    # Create cluster with n cores
+    cl <- parallel::makeCluster(n)
+
+    # define parallel likelihood
+    pll <- function(par){
+      parallel::parApply(
+        cl = cl,
+        X = par,
+        MARGIN = 1,
+        FUN = ll
+      )
+    }
+
+    # export functions / variables
+    parallel::clusterExport(
+      cl,
+      varlist = list("ll","data","obs","cost", par$metric),
+      envir = environment()
+    )
+
+    # flip parallel to external for cluster specific setup
+    parallel <- "external"
   }
 
   # reformat parameters
@@ -64,18 +116,7 @@ hr_fit <- function(
   # setup the Bayes run, no message forwarding is provided
   # so wrap the function in a do.call
   setup <- BayesianTools::createBayesianSetup(
-    likelihood = function(random_par) {
-      do.call("cost",
-              list(
-                settings = random_par,
-                obs = obs,
-                data = data,
-                resolution = resolution,
-                names = rownames(pars),
-                cost_function = par$metric
-              )
-            )
-    },
+    likelihood = if(parallel == "external"){pll}else{ll},
     prior = priors,
     names = rownames(pars),
     parallel = parallel
@@ -84,13 +125,32 @@ hr_fit <- function(
   # set bt control parameters
   bt_settings <- par$control$settings
 
+  if(parallel == "external"){
+    # alter the settings to recognize the number of
+    # cores / streams to process in parallel
+    bt_settings$nrChains <- 1
+    bt_settings$startValue <- setup$prior$sampler(n)
+  }
+
   # calculate the runs
-  cli::cli_alert_info("Fitting parameters...")
-  out <- BayesianTools::runMCMC(
-    bayesianSetup = setup,
-    sampler = par$control$sampler,
-    settings = bt_settings
+  invisible(
+    capture.output(
+      out <- suppressMessages(
+        suppressWarnings(
+          BayesianTools::runMCMC(
+            bayesianSetup = setup,
+            sampler = par$control$sampler,
+            settings = bt_settings
+          )
+        )
+      )
+    )
   )
+
+  # stop cluster
+  if(parallel == "external"){
+    parallel::stopCluster(cl)
+  }
 
   # drop last value
   bt_par <- BayesianTools::MAP(out)$parametersMAP
@@ -112,7 +172,21 @@ hr_fit <- function(
     )
   }
 
-  #print(out_optim$par)
-  #names(out_optim$par) <- rownames(pars)
+  # print metadata if desired, helpful in debugging parallel setups
+  if(verbose){
+    cli::cli_alert("number of individuals: {length(unique(obs[,1]))}")
+    cli::cli_alert("total number of positions: {nrow(obs)}")
+    cli::cli_alert("number of chains: {length(out$chain)}")
+    cli::cli_alert("chain length: {nrow(out$chain[[1]])}")
+    cli::cli_alert(
+      "runtime:
+        user: {round(out$settings$runtime[1])}
+        system: {round(out$settings$runtime[2], 1)}
+        total: {round(out$settings$runtime[3])}
+      "
+    )
+  }
+
+  # return optimization output
   return(out_optim)
 }
