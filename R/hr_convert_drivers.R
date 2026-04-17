@@ -25,7 +25,7 @@ hr_convert_drivers <- function(
   resolution <- terra::res(r)[1]
 
   # list of layer names (in original order)
-  layers <- names(r)
+  layers <- terra::names(r)
 
   # extract projection meta-data
   crs <- terra::crs(r)
@@ -33,7 +33,7 @@ hr_convert_drivers <- function(
   # convert to array
   # and convert the NA values
   # to the desired fill value
-  r <- as.array(r)
+  r <- terra::as.array(r)
   r[is.na(r)] <- na_fill
 
   # return everything as a nested list
