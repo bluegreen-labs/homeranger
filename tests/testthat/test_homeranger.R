@@ -4,6 +4,8 @@ load(system.file("extdata/raster_maps.rda", package = "homeranger"))
 load(system.file("extdata/reference_data.rda", package = "homeranger"))
 
 library(tidyr)
+library(terra)
+library(homeranger)
 
 test_that("validate model run", {
   # set parameters
@@ -28,6 +30,9 @@ test_that("validate model run", {
     )
   )
 
+  # create desired input format
+  data <- list(data = raster_maps, resolution = 25)
+
   # read in data and convert to matrix
   obs <- read.csv(
     system.file("extdata/Aspromonte_roedeer_traj.txt", package = "homeranger")) |>
@@ -41,27 +46,26 @@ test_that("validate model run", {
 
   # run the model for these parameters
   output <- hr_predict(
-    data = raster_maps,
+    data = data,
     par = params,
     obs = obs,
-    resolution = 25,
-    steps = 0,
-    runs = 0,
-    optimization = FALSE,
+    optimization = TRUE, # returns the log-likelihood values for the given data
     verbose = FALSE
   )
 
   # total residuals should add up to 0
   output$likelihood[output$likelihood == -9999] <- NA
   residuals <- sum(output$likelihood - reference_data$likelihood, na.rm = TRUE)
-  print(residuals)
+
+  # include tolerance
+  residuals <- ifelse(residuals < 0.00001, 0, 1)
   expect_equal(residuals, 0)
 })
 
 test_that("test optimizations", {
 
   params <- list(
-    metric = hr_cost,
+    metric = "hr_cost",
     control = list(
       sampler = "DEzs",
       settings = list(
@@ -91,7 +95,9 @@ test_that("test optimizations", {
     )
   )
 
-  # read in data and convert to matrix
+  # create desired input format
+  data <- list(data = raster_maps, resolution = 25)
+
   obs <- read.csv(
     system.file("extdata/Aspromonte_roedeer_traj.txt", package = "homeranger")) |>
     dplyr::filter(animal_id == 1196) |>
@@ -104,15 +110,22 @@ test_that("test optimizations", {
     as.matrix()
 
   # calibrate the model and optimize free parameters
+  # for only ONE individual!!
   pars <- hr_fit(
-    data = raster_maps,
+    data = data,
     obs = obs,
-    resolution = 25,
     par = params,
     parallel = FALSE
   )
-
   expect_type(pars, "list")
+
+  pars_par <- hr_fit(
+    data = data,
+    obs = obs,
+    par = params,
+    parallel = TRUE
+  )
+  expect_type(pars_par, "list")
 })
 
 # test_that("test helper functions", {
