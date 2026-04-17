@@ -48,6 +48,7 @@ vignettes/*.pdf
 # source files
 src/*.o
 src/*.so
+src/*.bak
 
 # documentation dir
 docs/
