@@ -134,7 +134,7 @@ hr_fit <- function(
 
   # calculate the runs
   invisible(
-    capture.output(
+    utils::capture.output(
       out <- suppressMessages(
         suppressWarnings(
           BayesianTools::runMCMC(
