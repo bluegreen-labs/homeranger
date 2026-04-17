@@ -68,11 +68,7 @@ hr_fit <- function(
     max_cores <- parallel::detectCores() - 1
 
     if(is.numeric(parallel)){
-      if(parallel <= max_cores){
-        n <- parallel
-      } else {
-        n <- max_cores
-      }
+      n <- parallel
     } else {
       n <- max_cores
     }
