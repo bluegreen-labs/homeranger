@@ -21,7 +21,6 @@ hr_predict <- function(
   data,
   par,
   obs,
-  resolution,
   steps = 1,
   runs = 1,
   keep_start = TRUE,
@@ -35,10 +34,10 @@ hr_predict <- function(
 
   # call low level cpp model function
   output <- home_range_cpp(
-    data = data,
+    data = data$data,
     par = par,
     locations = obs,
-    resolution = resolution,
+    resolution = data$resolution,
     nSimulatedSteps = steps,
     nSimulatedRuns = runs,
     optimization = optimization,
