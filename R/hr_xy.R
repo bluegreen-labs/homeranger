@@ -29,20 +29,21 @@ hr_xy <- function(
     cli::cli_abort("Missing track data")
   }
 
+  if(any(grepl("^obs$", colnames(track)))){
+    cli::cli_abort("No 'id' column is present in the track data!")
+  }
+
   track <- track |>
     sf::st_transform(terra::crs(map, proj = TRUE))
 
   cli::cli_alert("Extracting XY coordinates from sf track object")
   if (method == "exact"){
 
-    # extract resolution from map meta-data
-    #res <- terra::res(map)
-
     # extract XY coordinates
     p <- terra::extract(map, track, xy = TRUE) |>
       dplyr::mutate(
         id = track$id,
-        x = floor(terra::colFromX(map, .data$x)), # * res for original
+        x = floor(terra::colFromX(map, .data$x)),
         y = floor((nrow(map) - terra::rowFromY(map, .data$y)))
       ) |>
       dplyr::select(
