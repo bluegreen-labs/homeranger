@@ -4,6 +4,7 @@
 - implemented proper parallelization
 - included new functions for data formatting `hr_convert_drivers()`
 - new data formatting allows for the removal of the `resolution` parameter in the `hr_fit()` and `hr_predict()` functions.
+- updated vignettes to include data formatting and parallelization instructions
 
 ## homeranger v0.4
 
