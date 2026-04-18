@@ -1,0 +1,110 @@
+---
+title: "Model calibration"
+author: "Koen Hufkens"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Model calibration}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+
+# the main package wrapper
+library(homeranger)
+library(BayesianTools)
+
+# dependencies
+library(terra)
+library(tidyverse)
+library(here)
+
+# load compressed data
+load(system.file("extdata/roedeer.rda", package = "homeranger"))
+load(system.file("extdata/drivers.rda", package = "homeranger"))
+obs <- obs[which(obs[,1] == 1196),]
+```
+
+Model calibration compares real world observations with model results, while varying the various parameters (tuning knobs) of the model. This is an iterative process in which an algorithm searches for the best solution in the large space of potential parameters defined by parameter ranges.
+
+### Setting model parameter ranges
+
+To calibrate our model we now have to specify additional settings. These are provided to the {homeranger} model as a nested list including the `metric` to use for evaluation, the `control` parameters for the {BayesianTools} optimization package (see the package reference for details), and the actual model parameters `par`. The model parameters include a sub-list of coefficients `coef` which should be of equal length to the number of layers used in your driver data. The model parameters `par` (and `coef`) are (named) lists of three values, a lower bound, an upper bound, and a starting value.
+
+```{r echo = TRUE, message = FALSE, eval = TRUE}
+par <- list(
+  metric = "hr_cost",
+  control = list(
+    sampler = "DEzs",
+    settings = list(
+      iterations = 10000
+    )
+  ),
+  par = list(
+    r_l = list(lower=0.0001, upper=1, init = 0.5),
+    w_l = list(lower=0.0001, upper=1, init = 0.5),
+    r_d = list(lower=0.0001, upper=1, init = 0.5),
+    w_d = list(lower=-1, upper=-0.0001, init = -0.5),
+    r_dist = list(lower=0.0001, upper=1, init = 0.5),
+    w_dist = list(lower=0.0001, upper=1, init = 0.5),
+    step_length_dist = list(lower=0.0001, upper=0.1, init = 0.5),
+    step_length_shape = list(lower=0.3, upper=3, init = 1),
+    threshold_approx_kernel = list(lower=4000, upper=8000, init = 5000),
+    threshold_memory_kernel = list(lower=500, upper=6000, init = 1000),
+
+    # resource selection coefficients come last
+    # these are unnamed
+    coef = list(
+      lower = rep(-3, 6),
+      upper = rep(3, 6),
+      init = rep(0, 6)
+    )
+  )
+)
+```
+
+> In this demonstration the model optimization will only evaluate 1000 potential parameter sets to keep calculations short. Similarly, some of the parameter bounds are kept artificially narrow to speed up calcuations. You should not use these values as starting values in your own model fits!
+
+### Calibration
+
+Model calibration is done using the `hr_fit()` routine. This routine takes gridded drivers and actual observations as input. For the pre-processing of these I refer to the data formatting vignette!
+
+```{r echo = TRUE, message = FALSE, eval = FALSE}
+# calibrate the model and optimize free parameter
+opt_par <- hr_fit(
+  data = drivers,
+  obs = obs,
+  par = par,
+  parallel = FALSE
+  )
+```
+
+Model optimization results, in particular the parameter distributions, can be easily visualized using a plot command.
+
+```{r echo = FALSE}
+opt_par <- readRDS("opt_par.rds")
+```
+
+```{r echo = TRUE, message = FALSE, eval = TRUE, fig.width = 7, out.width="50%"}
+# plot BayesianTools results
+plot(opt_par$mod)
+```
+
+### Parallelization
+
+#### Method 1
+
+Considerable speed can be gained by optimizing parameters in parallel. However, it depends on the data you provide. When using large (pooled) datasets of many individuals for which a single parameter needs to be calculated you can use the built in `parallel` parameters (set to `TRUE`). This will provide you a speed up equivalent to the number of processing units available in your system. This method can also be used when you have a large amount of observations for a single individual. In both cases processing times of a total model run is large, in comparison to the input/output overhead to the system. For a single individual with a short track no speed gains will be made using the built in parallelization.
+
+#### Method 2
+
+If you have many individuals with relatively short tracks the overhead to the system is significant and Method 1 will not provide any advantage. Depending on your goal you will have to rely on external parallelization routines, to either optimize per individual and/or pool optimization results later on.  
+
+
+
