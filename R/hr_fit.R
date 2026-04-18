@@ -29,30 +29,16 @@ hr_fit <- function(
     verbose = FALSE
 ){
 
-  # this routine allows for dynamic cost function
-  # calling without too much trouble (consider deleting
-  # if not really desired to limit overhead)
-  cost <- function(settings, obs, data, resolution, names, cost_function){
-   eval(parse(text = cost_function))(
-     par = settings,
-     obs = obs,
-     data = data,
-     resolution = resolution,
-     names = names
-   )
-  }
-
   # define likelihood function setup
   ll <- function(X) {
-    do.call("cost",
-            list(
-              settings = X,
-              obs = obs,
-              data = data$data,
-              resolution = data$resolution,
-              names = rownames(pars),
-              cost_function = par$metric
-            )
+    do.call(par$metric,
+      list(
+        par = X,
+        obs = obs,
+        data = data$data,
+        resolution = data$resolution,
+        names = rownames(pars)
+      )
     )
   }
 
@@ -84,10 +70,10 @@ hr_fit <- function(
     cl <- parallel::makeCluster(n)
 
     # define parallel likelihood
-    pll <- function(par){
+    pll <- function(Y){
       parallel::parApply(
         cl = cl,
-        X = par,
+        X = Y,
         MARGIN = 1,
         FUN = ll
       )
@@ -96,7 +82,7 @@ hr_fit <- function(
     # export functions / variables
     parallel::clusterExport(
       cl,
-      varlist = list("ll","data","obs","cost", par$metric),
+      varlist = list("ll","data","obs", par$metric),
       envir = environment()
     )
 
@@ -115,8 +101,14 @@ hr_fit <- function(
 
   # setup the Bayes run, no message forwarding is provided
   # so wrap the function in a do.call
+  if(parallel == "external"){
+    cost <- pll
+  } else {
+    cost <- ll
+  }
+
   setup <- BayesianTools::createBayesianSetup(
-    likelihood = if(parallel == "external"){pll}else{ll},
+    likelihood = cost,
     prior = priors,
     names = rownames(pars),
     parallel = parallel
