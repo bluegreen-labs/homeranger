@@ -47,5 +47,3 @@ Suggests:
     knitr
 VignetteBuilder: knitr
 Encoding: UTF-8
-LazyData: true
-LazyDataCompression: xz
