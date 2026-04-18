@@ -1,7 +1,8 @@
 
 # load compressed data
-load(system.file("extdata/raster_maps.rda", package = "homeranger"))
+load(system.file("extdata/drivers.rda", package = "homeranger"))
 load(system.file("extdata/reference_data.rda", package = "homeranger"))
+load(system.file("extdata/roedeer.rda", package = "homeranger"))
 
 library(tidyr)
 library(terra)
@@ -30,23 +31,9 @@ test_that("validate model run", {
     )
   )
 
-  # create desired input format
-  data <- list(data = raster_maps, resolution = 25)
-
-  # read in data and convert to matrix
-  obs <- read.csv(
-    system.file("extdata/Aspromonte_roedeer_traj.txt", package = "homeranger")) |>
-    dplyr::mutate(across(where(is.numeric), ~dplyr::na_if(., -9999))) |>
-    dplyr::mutate(
-      x = as.integer(x / 25),
-      y = as.integer(1200 - (y / 25))
-    ) |>
-    dplyr::mutate(across(where(is.numeric), ~tidyr::replace_na(., -9999))) |>
-    as.matrix()
-
   # run the model for these parameters
   output <- hr_predict(
-    data = data,
+    data = drivers,
     par = params,
     obs = obs,
     optimization = TRUE, # returns the log-likelihood values for the given data
@@ -95,24 +82,11 @@ test_that("test optimizations", {
     )
   )
 
-  # create desired input format
-  data <- list(data = raster_maps, resolution = 25)
-
-  obs <- read.csv(
-    system.file("extdata/Aspromonte_roedeer_traj.txt", package = "homeranger")) |>
-    dplyr::filter(animal_id == 1196) |>
-    dplyr::mutate(across(where(is.numeric), ~dplyr::na_if(., -9999))) |>
-    dplyr::mutate(
-      x = as.integer(x / 25),
-      y = as.integer(1200 - (y / 25))
-    ) |>
-    dplyr::mutate(across(where(is.numeric), ~tidyr::replace_na(., -9999))) |>
-    as.matrix()
+  obs <- obs[which(obs[,1] == 1196),]
 
   # calibrate the model and optimize free parameters
-  # for only ONE individual!!
   pars <- hr_fit(
-    data = data,
+    data = drivers,
     obs = obs,
     par = params,
     parallel = FALSE
