@@ -6,7 +6,7 @@
 \usage{
 hr_drivers(
   track,
-  crs = "EPSG:3035",
+  crs = "ESRI:54009",
   buffer = 7,
   window = 11,
   path,
@@ -17,8 +17,8 @@ hr_drivers(
 \arguments{
 \item{track}{observed locations track}
 
-\item{crs}{an equal area CRS projection reference (default = EPSG:3035,
-or extended LAEA Europe)}
+\item{crs}{an equal area CRS projection reference (default = ESRI:54009,
+or the Mollweide global equal area approximation)}
 
 \item{buffer}{buffer (in km, default = 11) around the bio-logging track file
 to accommodate for a sufficiently large home range area. Value should be

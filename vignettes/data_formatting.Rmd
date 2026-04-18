@@ -20,8 +20,7 @@ library(homeranger)
 
 # dependencies
 library(terra)
-library(tidyverse)
-library(here)
+library(dplyr)
 
 # load compressed data
 load(system.file("extdata/roedeer_1196_lon_lat.rda", package = "homeranger"))

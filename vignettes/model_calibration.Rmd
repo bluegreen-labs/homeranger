@@ -22,8 +22,7 @@ library(BayesianTools)
 
 # dependencies
 library(terra)
-library(tidyverse)
-library(here)
+library(dplyr)
 
 # load compressed data
 load(system.file("extdata/roedeer.rda", package = "homeranger"))
@@ -87,13 +86,13 @@ opt_par <- hr_fit(
 
 Model optimization results, in particular the parameter distributions, can be easily visualized using a plot command.
 
-```{r echo = FALSE}
-opt_par <- readRDS("opt_par.rds")
-```
-
-```{r echo = TRUE, message = FALSE, eval = TRUE, fig.width = 7, out.width="50%"}
+```{r echo = TRUE, message = FALSE, eval = FALSE}
 # plot BayesianTools results
 plot(opt_par$mod)
+```
+
+```{r echo = FALSE, message = FALSE, eval = TRUE, out.width="80%"}
+knitr::include_graphics("opt_par.png")
 ```
 
 ### Parallelization
