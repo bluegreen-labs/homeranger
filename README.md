@@ -38,20 +38,120 @@ library("homeranger")
 ```
 ## Use
 
-The current release is the first refactored version of the original C++ framework into R (with a C++ backend). The data handling is therefore not optimized. However, a reference example is given below, recreating the original results in Ranc et al. (2022).
+The underlying idea of the homeranger package and the underlying mechanistic
+movement model is to approximate the behaviour of observed individuals using the 
+provided model, an underlying spatial grid of driver data (i.e. a landscape
+through which the individual moves) and a set of optimized parameters (knobs 
+to tweak) to influence the underlying model.
+
+### model fitting
+
+The first step is therefore often optimizing the parameters of the mechanistic
+movement model by calculating a best fit to observed values Running a model fit
+requires some initial data pre-processing and has to adhere to the
+required formats, mainly:
+
+ - georeferenced (equal area) raster driver data
+ - georeferenced observation tracks for individuals (can be multiples)
+
+#### data pre-processing
+
+Ideally, driver data is geo-referenced data downloaded through the download
+routines or otherwise constructed (see advanced vignette). This data combined
+with the parameter file can be passed to the `hr_convert_drivers()` function
+to convert the data to the desired input format.
 
 ```r
-library(homeranger)
-library(terra)
+# load georeferenced data as a {terra} SpatRaster file
+r <- terra::rast("your_input_raster")
 
-# read in the reference data, these are calculated with the
-# shared original code and provide the step based likelihoods
-# this output should match the output of the package for parity
-reference <- read_csv("data-raw/validation/objective_function_detail.csv")
-reference$likelihood[reference$likelihood == -9999] <- NA
+# convert the raster data combined with the parameters
+# to the desired format
+data <- hr_convert_drivers(r)
+```
 
-# specify the parameters as used in the default run
-# this is would be config_best_Mmem_fitting.txt
+Geo-referenced observation data (an {sf} object) can be correctly oriented within 
+the raw data array using the `hr_xy()` function, which extracts the rows and
+columns within the data array.
+
+```r
+# reading in a text file with coordinate columns x_col and y_col
+# in lon/lat format, make sure that the only other remaining 
+# column is the individuals ID
+track <- read.csv('file.csv') |>
+  sf::st_as_sf(
+    coords=c("x_col", "y_col"),
+    crs=4326
+  )
+
+# combined with the driver raster data above extract the rows and columns
+# relative to this raster data
+obs <- hr_xy(r, track)
+```
+
+The final step in the parameter optimization is fitting the observed data to
+the model output. This is an iterative process. Therefore we need to specify
+upper and lower bounds for the parameters (which have to reflect reasonable
+physical properties if these can be easily interpreted).
+
+```r
+# set optimization parameter ranges as well as the control parameters
+# for the optimization algorithm
+params <- list(
+  metric = "hr_cost",
+  control = list(
+    sampler = "DEzs",
+    settings = list(
+      iterations = 7 * 10
+    )
+  ),
+  par = list(
+    r_l = list(lower=0.0001, upper=1, init = 0.5),
+    w_l = list(lower=0.0001, upper=1, init = 0.5),
+    r_d = list(lower=0.0001, upper=1, init = 0.5),
+    w_d = list(lower=-1, upper=-0.0001, init = -0.5),
+    r_dist = list(lower=0.0001, upper=1, init = 0.5),
+    w_dist = list(lower=0.0001, upper=1, init = 0.5),
+    step_length_dist = list(lower=0.0001, upper=0.1, init = 0.5),
+    step_length_shape = list(lower=0.3, upper=3, init = 1),
+    threshold_approx_kernel = list(lower=300, upper=302, init = 301),
+    threshold_memory_kernel = list(lower=300, upper=302, init = 301),
+
+    # resource selection coefficients come last
+    # these are unnamed
+    coef = list(
+      lower = rep(-3, 6),
+      upper = rep(3, 6),
+      init = rep(0, 6)
+    )
+  )
+)
+
+# calibrate the model parameters
+pars <- hr_fit(
+    data = data,
+    obs = obs,
+    par = params,
+    parallel = FALSE,
+    verbose = TRUE
+)
+
+# plot the model parameter distributions
+plot(pars$mod)
+```
+
+Note that the option for parallel processing exists, but only provides
+significant speed gains when optimizing model parameters for multiple
+individuals at the same time or very long observation tracks.
+
+### model prediction
+
+The data pre-processing follows the same steps as the model fitting above. The
+model parameters are either provided by the fitting routine above (in this case
+stored in `pars$par`).
+
+```r
+# the model parameters in the pars$par have the following structure
 params <- list(
   r_l = 27.5332236990522,
   w_l = 0,
@@ -76,36 +176,18 @@ params <- list(
     "landcover_agri" = -0.811974081226742
   )
 )
-```
 
-```r
-# sort and subset data
-# load the raster data in a data cube, and reorder the layers
-# based upon the order of the coefficients in the parameter
-# list - finally convert to 3D array to be passed to the
-# low level C++ functions
-r <- terra::rast(list.files("data-raw/drivers/","*.asc", full.names = TRUE))
-r <- as.array(subset(r, names(params$coef)))
-r[is.na(r)] <- 0
-```
-
-```r
-# run the model for these parameters
-# in optimization mode (to check a traceable output)
-# there should be ~parity as this is deterministic
+# simulate 100 steps from the starting position and this for two randomizations
 output <- hr_predict(
-  data = r,
+  data = data,
   par = params,
-  obs = "data-raw/tracks/Aspromonte_roedeer_traj.txt",
-  resolution = 25,
-  optimization = TRUE,
-  verbose = TRUE
+  obs = obs,
+  steps = 100,
+  runs = 2
 )
 
-# plot the 1:1 graph - should be spot on
-output$likelihood[output$likelihood == -9999] <- NA
-plot(output$likelihood, reference$likelihood)
-abline(0,1)
+# plot the model simulation output using
+plot(output)
 ```
 
 ## Acknowledgements

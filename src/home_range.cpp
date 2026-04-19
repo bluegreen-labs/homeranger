@@ -517,7 +517,6 @@ List home_range_cpp(
   lookuptable_cleanup(r_memoryKernel);
   lookuptable_cleanup(w_memoryKernel);
 
-
   if(verbose){
     end = std::chrono::high_resolution_clock::now();
     dur = end - begin;

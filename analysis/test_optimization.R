@@ -62,7 +62,8 @@ pars <- hr_fit(
     data = data,
     obs = obs,
     par = params,
-    parallel = TRUE
+    parallel = TRUE,
+    verbose = TRUE
 )
 
 gc()

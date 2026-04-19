@@ -66,22 +66,39 @@ output$likelihood[output$likelihood == -9999] <- NA
 plot(output$likelihood, reference$likelihood)
 abline(0,1)
 
-# # run the model for these parameters in prediction
-# # mode
-# output <-
-#   hr_predict(
-#     data = r,
-#     par = params,
-#     obs = obs,
-#     resolution = res,
-#     steps = 10,
-#     runs = 2,
-#     verbose = TRUE
-#   )
-#
-# # print method for hr_predict class
-# print(head(output$locations, 20))
-# plot(output)
+# run the model for these parameters in prediction
+# mode
+output <-
+  hr_predict(
+    data = data,
+    par = params,
+    obs = obs,
+    steps = 10,
+    runs = 2,
+    verbose = TRUE
+  )
+
+# print method for hr_predict class
+print(head(output$locations, 20))
+plot(output)
+
+load(system.file("extdata/drivers.rda", package = "homeranger"))
+
+# run the model for these parameters in prediction
+# mode
+output <-
+  hr_predict(
+    data = drivers,
+    par = params,
+    obs = obs,
+    steps = 10,
+    runs = 2,
+    verbose = TRUE
+  )
+
+# print method for hr_predict class
+print(head(output$locations, 20))
+plot(output)
 
 # } else {
 #   r <- terra::rast("analysis/test.tif")

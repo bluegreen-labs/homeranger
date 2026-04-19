@@ -1,0 +1,103 @@
+---
+title: "Data formatting"
+author: "Koen Hufkens"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Data formatting}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+
+# the main package wrapper
+library(homeranger)
+
+# dependencies
+library(terra)
+library(dplyr)
+
+# load compressed data
+load(system.file("extdata/roedeer_1196_lon_lat.rda", package = "homeranger"))
+obs <- as.data.frame(obs) |>
+  dplyr::mutate(across(where(is.numeric), ~dplyr::na_if(., -9999))) |>
+  na.omit()
+```
+
+This vignette will deal with the pre-processing of the data before model fitting or simulation. These steps are key to be able to proceed to these next steps. In these instructions I will not cover normalization of unevenly spaced data positioning data, this is covered by other movement ecology packages in R (e.g. the {amt} package). No missing values (NA values) are allowed in the regularized track.
+
+### Reading in track data
+
+Depending on the format of your biologging positioning data you should either read in the data from an established vector format (e.g. a shape file), or convert it from a flat text file (csv, txt) or existing data frame or matrix with the `sf` package. If your data comes as a shape file, or another common vector format you can use the `sf::st_read()` function to read in the data right away.
+
+```{r echo = TRUE, message = FALSE, eval = FALSE}
+# reading in a shape file
+track <- sf::st_read("your_track.shp")
+```
+
+When using a flat file with coordinates (in this case in columns named `x` and `y`) you can convert the data to the {sf} format using the `sf::st_as_sf()` function. Make sure to set the correct reference system, or CRS, when reading in the data!
+
+```{r echo = TRUE, message = FALSE, eval = FALSE}
+# Say you read in a csv flat file with coordinate columns x and y
+# in lon/lat format and an animals_id column
+obs <- read.csv('file.csv')
+```
+
+You then need to convert it to an {sf} object, while making sure to rename an identifying column to `id`.
+
+```{r echo = TRUE, message = FALSE, eval = TRUE, fig.width = 7, out.width="80%"}
+# look at the read in data
+print(head(obs))
+
+# rename the ID column and convert to sf
+track <- obs |>
+  dplyr::rename(
+    id = "animals_id"
+  ) |>
+  sf::st_as_sf(
+    coords=c("x", "y"),
+    crs = 4326
+  )
+
+#par(mar = c(0, 0, 0, 0))
+#plot(track)
+```
+
+> Note that the track data should include one additional column reflecting an ID number or name of the observed individual in a column named "id"!
+
+### Getting driver data
+
+The model framework needs driver data. The `hr_drivers()` routine allows you to download this data. It downloads a digital elevation map (DEM) and a land cover map from the [Microsoft Planetary Computer](https://planetarycomputer.microsoft.com/) data services. Note that the function provides data which is similar to, but not identical with, the data used in the original paper by Ranc et al. (2022). The function uses an {sf} (track) object to determine the extent of the data to download (buffered with a number of kilometers north/south, east/west).
+
+```{r echo = TRUE, message = FALSE, eval = FALSE}
+drivers <- homeranger::hr_drivers(
+  track,
+  buffer = 7
+)
+```
+
+> By default the data is converted to the global equal area Mollweide projection, but a local equal area projection can be used for higher accuracy.
+
+### Formatting driver data
+
+For the {homeranger} package the data needs to be converted to facilitate the internal processing of the model. When optimizing model parameters the order of the map layers used does not matter and the conversion can be called without any additional information.
+
+```{r echo = TRUE, message = FALSE, eval = FALSE}
+drivers_optimization <- homeranger::hr_convert_drivers(
+  drivers
+)
+```
+
+When running the model in simulation mode you have to make sure that the specified parameters match the (order of the) driver data. Therefore you need to provide the parameters for your simulations to the conversion routine.
+
+```{r echo = TRUE, message = FALSE, eval = FALSE}
+drivers_prediction <- homeranger::hr_convert_drivers(
+  drivers,
+  par = your_parameter_list
+)
+```

@@ -25,6 +25,7 @@ Depends:
 Imports:
     Rcpp (>= 1.0.14),
     rlang,
+    utils,
     cli,
     BayesianTools,
     terra,
@@ -46,5 +47,3 @@ Suggests:
     knitr
 VignetteBuilder: knitr
 Encoding: UTF-8
-LazyData: true
-LazyDataCompression: xz

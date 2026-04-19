@@ -9,8 +9,8 @@
 #' This limits the memory footprint of operations.
 #'
 #' @param track observed locations track
-#' @param crs an equal area CRS projection reference (default = EPSG:3035,
-#'  or extended LAEA Europe)
+#' @param crs an equal area CRS projection reference (default = ESRI:54009,
+#'  or the Mollweide global equal area approximation)
 #' @param buffer buffer (in km, default = 11) around the bio-logging track file
 #'  to accommodate for a sufficiently large home range area. Value should be
 #'  adjusted to the target species.
@@ -27,7 +27,7 @@
 
 hr_drivers <- function(
   track,
-  crs = "EPSG:3035",
+  crs = "ESRI:54009",
   buffer = 7,
   window = 11,
   path,

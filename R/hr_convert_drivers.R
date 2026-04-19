@@ -24,6 +24,9 @@ hr_convert_drivers <- function(
   # extract resolution
   resolution <- terra::res(r)[1]
 
+  # extract extent
+  extent <- as.list(terra::ext(r))
+
   # list of layer names (in original order)
   layers <- terra::names(r)
 
@@ -41,6 +44,7 @@ hr_convert_drivers <- function(
     list(
       resolution = resolution,
       crs = crs,
+      extent = extent,
       layer = layers,
       data = r
     )
