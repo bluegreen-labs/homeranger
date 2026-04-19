@@ -9,7 +9,6 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
@@ -95,15 +94,73 @@ plot(opt_par$mod)
 knitr::include_graphics("opt_par.png")
 ```
 
+> Note that all model calculations are done in memory. This means that if your driver data is large your model calibration (but also simulations) might fail. Remember that the model itself requires both space for to hold the driver data but also additional memory for the calculations, so assuming that being able to convert and prepare the data is does not imply that you have sufficient memory to run the model. Furthermore, memory requirements will multiply by the number of cores used during parallelization (see below). Where possible process will fail gracefully, but make note of memory requirements and consider this when designing a model calibration strategy.
+
 ### Parallelization
 
-#### Method 1
+Different methods of parallelizations are possible, but they serve different needs. 
 
-Considerable speed can be gained by optimizing parameters in parallel. However, it depends on the data you provide. When using large (pooled) datasets of many individuals for which a single parameter needs to be calculated you can use the built in `parallel` parameters (set to `TRUE`). This will provide you a speed up equivalent to the number of processing units available in your system. This method can also be used when you have a large amount of observations for a single individual. In both cases processing times of a total model run is large, in comparison to the input/output overhead to the system. For a single individual with a short track no speed gains will be made using the built in parallelization.
+#### Parallel estimation of global parameters across many individuals
 
-#### Method 2
+First there is the parallel estimation of a single set of parameters which is shared across multiple observed individuals. Considerable speed can be gained by optimizing parameters in parallel. However, it depends on the data you provide. When using large (pooled data of many individuals) datasets for which a single set of parameters needs to be calculated you can use the built in `parallel` parameters (set to `TRUE`). 
 
-If you have many individuals with relatively short tracks the overhead to the system is significant and Method 1 will not provide any advantage. Depending on your goal you will have to rely on external parallelization routines, to either optimize per individual and/or pool optimization results later on.  
+This will provide you a speed up equivalent to the number of processing units available in your system. This method can also be used when you have a large amount of observations for a single individual. However, this use case is probably less common as you would multiple thousands of observations. 
+
+In both cases the processing time of a total model run is large in comparison to the input/output overhead to the system due to the distribution and retrieval of data across the cluster processing units. For a single individual with a short track no speed gains will be made using the built in parallelization.
+
+#### Parallel estimation of individual parameters
+
+Alternatively, you can use a bespoke script to estimate model parameters for each individual separately. This method distributes `hr_fit()` calls across CPUs of your system/cluster. Below is one possible way to implement this using the {parallel} package.
+
+First we'll create a nested list of coordinates, by individual. Note that you can use any other method to group individuals together.
 
 
+```{r}
+# split the list of coordinates
+# according the the individual id
+# or any other grouping factor (according to your experiment)
+obs <- obs |>
+  dplyr::group_split(id)
+
+# show first elements of the list
+head(obs, n = 2)
+```
+
+Next a cluster setup is defined with 4 cores, you can adjust this to your system settings. You can use `parallel::detectCores()` to detect the maximum number of cores on your system. It is adviced to use one core less than this maximum as the system management needs processing power, too. In addition, we use the `parallel::clusterExport()` function to send/forward all required functions to all cluster nodes. This includes for each node, the driver data `drivers`, the parameter ranges `par` and the fitting function `hr_fit()`.
+
+```{r eval = FALSE}
+# Create cluster with n cores
+cl <- parallel::makeCluster(4)
+
+# export functions / variables
+parallel::clusterExport(
+  cl,
+  varlist = list("drivers","par", "hr_fit")
+)
+```
+
+We now wrap the `hr_fit()` function in a wrapping function which only takes a single argument X on it's first position. We then call this wrapping function using the parallel `lapply()` function, `parallel::parLapply()`. This function a list of observations `obs` to distribute to the cluster `cl` and a function which takes an argument `X`, containing the subset of the list `obs` for which to estimate the parameters.
+
+```{r eval = FALSE}
+# custom wrapping function
+split_fit <- function(X){
+  hr_fit(
+    data = drivers, # as forwarded to the cluster node
+    obs = as.matrix(X), # provided to the cluster node as "X"
+    par = par, # as forwarded to the cluster node
+    parallel = FALSE
+  )
+}
+
+# estimate optimal parameters for all entries in the
+# list
+opt_list <- parallel::parLapply(
+  cl = cl,
+  X = obs, 
+  fun = split_fit
+)
+
+# stop the cluster, clean up the nodes
+parallel::stopCluster(cl)
+```
 
