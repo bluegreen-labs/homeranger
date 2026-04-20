@@ -352,11 +352,13 @@ List home_range_cpp(
       releaseCol = totalTraj.col[totalCount];
       releaseRow = totalTraj.row[totalCount];
 
+      // initialize working / simulation memory arrays
       double** memoriesRefIni;
       double** memoriesWorkIni;
-      initialize2D(memoriesRefIni,Arena.nRows,Arena.nCols);
-      initialize2D(memoriesWorkIni,Arena.nRows,Arena.nCols);
+      initialize2D(memoriesRefIni, Arena.nRows, Arena.nCols);
+      initialize2D(memoriesWorkIni, Arena.nRows, Arena.nCols);
 
+      // hard copy / reference of the current working memory arrays
       for(int r=0;r<Arena.nRows;r++){
         for(int c=0;c<Arena.nCols;c++){
           memoriesRefIni[r][c] = Arena.arrayMemoriesRef[r][c];
@@ -404,7 +406,9 @@ List home_range_cpp(
           if(maxR>Arena.nRows){maxR=Arena.nRows;}
           if(minC<0){lagC=minC;minC=0;}
           if(maxC>Arena.nCols){maxC=Arena.nCols;}
-          lagRmem=0;lagCmem=0;
+
+          lagRmem=0;
+          lagCmem=0;
           if(minRmem<0){lagRmem=minRmem;minRmem=0;}
           if(maxRmem>Arena.nRows){maxRmem=Arena.nRows;}
           if(minCmem<0){lagCmem=minCmem;minCmem=0;}
@@ -413,8 +417,8 @@ List home_range_cpp(
           // 1. Memory dynamics
           for(int r=0;r<Arena.nRows;r++){
             for(int c=0;c<Arena.nCols;c++){
-              Arena.arrayMemoriesRef[r][c]=Arena.arrayMemoriesRef[r][c]*memoryRD_cplm;
-              Arena.arrayMemoriesWork[r][c]=Arena.arrayMemoriesWork[r][c]*memoryWD_cplm;
+              Arena.arrayMemoriesRef[r][c] = Arena.arrayMemoriesRef[r][c] * memoryRD_cplm;
+              Arena.arrayMemoriesWork[r][c] = Arena.arrayMemoriesWork[r][c] * memoryWD_cplm;
             }
           }
 
@@ -501,6 +505,13 @@ List home_range_cpp(
 
         }
       }
+
+      // cleanup reference and working memory
+      // between individuals, no dangling bits
+      // although technically overwritten
+      clean2D(memoriesRefIni, Arena.nRows);
+      clean2D(memoriesWorkIni, Arena.nRows);
+
     } else {
       rowCount = rowCount + 1;
     }

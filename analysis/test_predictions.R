@@ -99,14 +99,3 @@ output <-
 # print method for hr_predict class
 print(head(output$locations, 20))
 plot(output)
-
-# } else {
-#   r <- terra::rast("analysis/test.tif")
-#   track <-read.csv("data-raw/tracks/regularized_data_final.csv", sep = ";") |>
-#     dplyr::rename(id = animals_id) |>
-#     na.omit() |>
-#     sf::st_as_sf(coords = c("x", "y"), crs = "EPSG:4326")
-#   obs <- hr_xy(r, track)
-#   res <- terra::res(r)[1]
-#   r <- terra::as.array(r)
-# }

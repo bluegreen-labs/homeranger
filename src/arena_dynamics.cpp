@@ -1,14 +1,24 @@
 #include "header.h"
 
-// Initialization
+// Initialization 2D array
 void initialize2D(double** & vector, int nR, int nC)
 {
   vector = new double*[nR];
-  for (int i = 0; i < nR; i++)
-  {
+  for (int i = 0; i < nR; i++){
     vector[i] = new double[nC];
   }
 }
+
+void clean2D(double** & vector, int nR){
+  // Delete each row (inner array)
+  for (int i = 0; i < nR; i++){
+    delete[] vector[i];
+  }
+
+  // Delete the array of pointers (outer array)
+  delete[] vector;
+}
+
 
 // Resets the spatial landscapes (memory and attraction) -- to be ran between animals
 void arena_renewal(ArraysDynamics & input_arrays, int focPatchX, int focPatchY)

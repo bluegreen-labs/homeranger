@@ -99,6 +99,7 @@ void arena_cleanup(ArraysDynamics & inputArrays);
 void lookuptable_cleanup(lookupTable & inputArrays);
 
 void initialize2D(double** & vector, int nR, int nC);
+void clean2D(double** & vector, int nR);
 
 ArraysDynamics launchArena(
         int nRow,

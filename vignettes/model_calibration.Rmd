@@ -100,15 +100,11 @@ knitr::include_graphics("opt_par.png")
 
 Different methods of parallelizations are possible, but they serve different needs. 
 
-#### Parallel estimation of global parameters across many individuals
+#### Parallel estimation of global parameters (internal)
 
-First there is the parallel estimation of a single set of parameters which is shared across multiple observed individuals. Considerable speed can be gained by optimizing parameters in parallel. However, it depends on the data you provide. When using large (pooled data of many individuals) datasets for which a single set of parameters needs to be calculated you can use the built in `parallel` parameters (set to `TRUE`). 
+First there is the parallel estimation of a single set of parameters which is shared across multiple observed individuals. Considerable speed can be gained by optimizing parameters in parallel. However, it depends on the data you provide. When using large (pooled data of many individuals) datasets for which a single set of parameters needs to be calculated you can use the built in `parallel` parameters (set to `TRUE`). This will provide you a speed up equivalent to the number of processing units available in your system. This method can also be used when you have a large amount of observations for a single individual. However, this use case is probably less common as you would multiple thousands of observations. In both cases the processing time of a total model run is large in comparison to the input/output overhead to the system due to the distribution and retrieval of data across the cluster processing units. For a single individual with a short track no speed gains will be made using the built in parallelization. When using this method is helpful to know that the number of iterations used are split across the number of parallel processes (chains).
 
-This will provide you a speed up equivalent to the number of processing units available in your system. This method can also be used when you have a large amount of observations for a single individual. However, this use case is probably less common as you would multiple thousands of observations. 
-
-In both cases the processing time of a total model run is large in comparison to the input/output overhead to the system due to the distribution and retrieval of data across the cluster processing units. For a single individual with a short track no speed gains will be made using the built in parallelization.
-
-#### Parallel estimation of individual parameters
+#### Parallel estimation of individual parameters (external)
 
 Alternatively, you can use a bespoke script to estimate model parameters for each individual separately. This method distributes `hr_fit()` calls across CPUs of your system/cluster. Below is one possible way to implement this using the {parallel} package.
 
@@ -163,4 +159,19 @@ opt_list <- parallel::parLapply(
 # stop the cluster, clean up the nodes
 parallel::stopCluster(cl)
 ```
+
+#### Parallel estimation of global parameters (external)
+
+Observant readers will note that the above method could also be used to optimize global parameters if the data collected from the various processes (chains) could be combined. Luckily the {BayesianTools} package provides a utility function to do so, namely `BayesianTools::createMcmcSamplerList()`.
+
+```{r eval = FALSE}
+# split out model output details 
+# from the standard hr_fit() output
+mod <- lapply(opt_list, \(x) x$mod)
+
+## Combine the chains
+out <- BayesianTools::createMcmcSamplerList(mod)
+```
+
+
 
