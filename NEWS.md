@@ -1,10 +1,11 @@
 ## homeranger v0.5
 
 - traps out of range memory issue around L261, which breaks optimization
-- implemented proper parallelization
+- implemented proper (internal) parallelization
 - included new functions for data formatting `hr_convert_drivers()`
 - new data formatting allows for the removal of the `resolution` parameter in the `hr_fit()` and `hr_predict()` functions.
-- updated vignettes to include data formatting and parallelization instructions
+- updated vignettes to include data formatting and parallelization instructions (internal + external)
+- fixed final potential memory leak issue
 
 ## homeranger v0.4
 
