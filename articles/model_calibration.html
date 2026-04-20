@@ -92,7 +92,7 @@
                         <h4 data-toc-skip class="author">Koen
 Hufkens</h4>
             
-            <h4 data-toc-skip class="date">2026-04-19</h4>
+            <h4 data-toc-skip class="date">2026-04-20</h4>
       
 
       <div class="hidden name"><code>model_calibration.Rmd</code></div>
@@ -196,8 +196,7 @@ when designing a model calibration strategy.</p>
 <p>Different methods of parallelizations are possible, but they serve
 different needs.</p>
 <div class="section level4">
-<h4 id="parallel-estimation-of-global-parameters-across-many-individuals">Parallel estimation of global parameters across many
-individuals<a class="anchor" aria-label="anchor" href="#parallel-estimation-of-global-parameters-across-many-individuals"></a>
+<h4 id="parallel-estimation-of-global-parameters-internal">Parallel estimation of global parameters (internal)<a class="anchor" aria-label="anchor" href="#parallel-estimation-of-global-parameters-internal"></a>
 </h4>
 <p>First there is the parallel estimation of a single set of parameters
 which is shared across multiple observed individuals. Considerable speed
@@ -205,20 +204,21 @@ can be gained by optimizing parameters in parallel. However, it depends
 on the data you provide. When using large (pooled data of many
 individuals) datasets for which a single set of parameters needs to be
 calculated you can use the built in <code>parallel</code> parameters
-(set to <code>TRUE</code>).</p>
-<p>This will provide you a speed up equivalent to the number of
-processing units available in your system. This method can also be used
-when you have a large amount of observations for a single individual.
-However, this use case is probably less common as you would multiple
-thousands of observations.</p>
-<p>In both cases the processing time of a total model run is large in
-comparison to the input/output overhead to the system due to the
-distribution and retrieval of data across the cluster processing units.
-For a single individual with a short track no speed gains will be made
-using the built in parallelization.</p>
+(set to <code>TRUE</code>). This will provide you a speed up equivalent
+to the number of processing units available in your system. This method
+can also be used when you have a large amount of observations for a
+single individual. However, this use case is probably less common as you
+would multiple thousands of observations. In both cases the processing
+time of a total model run is large in comparison to the input/output
+overhead to the system due to the distribution and retrieval of data
+across the cluster processing units. For a single individual with a
+short track no speed gains will be made using the built in
+parallelization. When using this method is helpful to know that the
+number of iterations used are split across the number of parallel
+processes (chains).</p>
 </div>
 <div class="section level4">
-<h4 id="parallel-estimation-of-individual-parameters">Parallel estimation of individual parameters<a class="anchor" aria-label="anchor" href="#parallel-estimation-of-individual-parameters"></a>
+<h4 id="parallel-estimation-of-individual-parameters-external">Parallel estimation of individual parameters (external)<a class="anchor" aria-label="anchor" href="#parallel-estimation-of-individual-parameters-external"></a>
 </h4>
 <p>Alternatively, you can use a bespoke script to estimate model
 parameters for each individual separately. This method distributes
@@ -304,6 +304,22 @@ the parameters.</p>
 <span></span>
 <span><span class="co"># stop the cluster, clean up the nodes</span></span>
 <span><span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/makeCluster.html" class="external-link">stopCluster</a></span><span class="op">(</span><span class="va">cl</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level4">
+<h4 id="parallel-estimation-of-global-parameters-external">Parallel estimation of global parameters (external)<a class="anchor" aria-label="anchor" href="#parallel-estimation-of-global-parameters-external"></a>
+</h4>
+<p>Observant readers will note that the above method could also be used
+to optimize global parameters if the data collected from the various
+processes (chains) could be combined. Luckily the {BayesianTools}
+package provides a utility function to do so, namely
+<code><a href="https://rdrr.io/pkg/BayesianTools/man/createMcmcSamplerList.html" class="external-link">BayesianTools::createMcmcSamplerList()</a></code>.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># split out model output details </span></span>
+<span><span class="co"># from the standard hr_fit() output</span></span>
+<span><span class="va">mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">opt_list</span>, \<span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="va">x</span><span class="op">$</span><span class="va">mod</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co">## Combine the chains</span></span>
+<span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu">BayesianTools</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/BayesianTools/man/createMcmcSamplerList.html" class="external-link">createMcmcSamplerList</a></span><span class="op">(</span><span class="va">mod</span><span class="op">)</span></span></code></pre></div>
 </div>
 </div>
   </div>
