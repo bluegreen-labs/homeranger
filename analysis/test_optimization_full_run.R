@@ -1,11 +1,8 @@
-# a 100 runs on the latest install
-#
-# run time depends on the system:
-# on reference system 45 - 60s
+# Recreating the optimization of the Ranc et al. paper.
 
-if(as.numeric(packageDescription("homeranger")$Version) <= 0.4){
- stop("Install the latest release or rebuild package")
-}
+# Testing the stability of long runs and large optimization
+# jobs, this run is internally parallelized using Bayesiantools
+# and uses a maximum of three (3) threads.
 
 library(homeranger)
 library(terra)
