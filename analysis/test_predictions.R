@@ -1,13 +1,37 @@
+# This is the basic test script to check model output against expected
+# values for the parameters published in the original paper. Model likelihood
+# values should stay the same (1:1 line) when changing the baseline code as
+# the underlying code is deterministic for forward runs.
+
 library(homeranger)
 library(terra)
 library(dplyr)
 source("R/hr_convert_drivers.R")
 
-# read in the reference data, these are calculated with the
-# shared original code and provide the step based likelihoods
-# this output should match the output of the package for parity
-reference <- read.csv("data-raw/validation/objective_function_detail.csv")
-reference$likelihood[reference$likelihood == -9999] <- NA
+# # read in the reference data, these are calculated with the
+# # shared original code and provide the step based likelihoods
+# # this output should match the output of the package for parity
+# reference <- read.csv("data-raw/validation/objective_function_detail.csv")
+# reference$likelihood[reference$likelihood == -9999] <- NA
+#
+# # create the driver data from original files (convert coordinates and
+# # remove NA values)
+# r <- rast(list.files("data-raw/drivers/","*.asc", full.names = TRUE))
+# data <- hr_convert_drivers(r, params, na_fill = 0)
+#
+# obs <- read.csv("data-raw/tracks/Aspromonte_roedeer_traj.txt") |>
+#   dplyr::mutate(across(where(is.numeric), ~na_if(., -9999))) |>
+#   dplyr::mutate(
+#     x = as.integer(x / data$resolution),
+#     y = as.integer(nrow(r) - (y / data$resolution))
+#   ) |>
+#   dplyr::mutate(across(where(is.numeric), ~tidyr::replace_na(., -9999))) |>
+#   as.matrix()
+
+# read in preformatted data
+load(system.file("extdata/roedeer.rda", package = "homeranger"))
+load(system.file("extdata/drivers.rda", package = "homeranger"))
+load(system.file("extdata/reference_data.rda", package = "homeranger"))
 
 # specify the parameters as used in the default run
 # this is would be config_best_Mmem_fitting.txt
@@ -36,23 +60,11 @@ params <- list(
   )
 )
 
-r <- rast(list.files("data-raw/drivers/","*.asc", full.names = TRUE))
-data <- hr_convert_drivers(r, params, na_fill = 0)
-
-obs <- read.csv("data-raw/tracks/Aspromonte_roedeer_traj.txt") |>
-  dplyr::mutate(across(where(is.numeric), ~na_if(., -9999))) |>
-  dplyr::mutate(
-    x = as.integer(x / data$resolution),
-    y = as.integer(nrow(r) - (y / data$resolution))
-  ) |>
-  dplyr::mutate(across(where(is.numeric), ~tidyr::replace_na(., -9999))) |>
-  as.matrix()
-
 # run the model for these parameters
 # in optimization mode (to check a traceable output)
 # there should be ~parity as this is deterministic
 output <- hr_predict(
-  data = data,
+  data = drivers,
   par = params,
   obs = obs,
   steps = 1,
@@ -63,26 +75,8 @@ output <- hr_predict(
 
 # plot the 1:1 graph - should be spot on
 output$likelihood[output$likelihood == -9999] <- NA
-plot(output$likelihood, reference$likelihood)
+plot(output$likelihood, reference_data$likelihood)
 abline(0,1)
-
-# run the model for these parameters in prediction
-# mode
-output <-
-  hr_predict(
-    data = data,
-    par = params,
-    obs = obs,
-    steps = 10,
-    runs = 2,
-    verbose = TRUE
-  )
-
-# print method for hr_predict class
-print(head(output$locations, 20))
-plot(output)
-
-load(system.file("extdata/drivers.rda", package = "homeranger"))
 
 # run the model for these parameters in prediction
 # mode
