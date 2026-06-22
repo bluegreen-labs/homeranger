@@ -8,11 +8,11 @@
 
 if(packageVersion("homeranger") != "0.4"){
   try(detach("package:homeranger", unload = TRUE))
-  try(remove.packages("homeranger", lib = "~/R/x86_64-pc-linux-gnu-library/4.5"))
+  try(remove.packages("homeranger", lib = "~/R/x86_64-pc-linux-gnu-library/4.6"))
   remotes::install_github(
     "bluegreen-labs/homeranger@v0.4",
     upgrade = "never",
-    quiet = TRUE
+    quiet = FALSE
   )
 }
 
@@ -51,11 +51,14 @@ params <- list(
   )
 )
 
+obs <- read.csv2("data-raw/tracks/Aspromonte_roedeer_traj_1196.txt", sep = ",") |>
+  dplyr::filter(animal_id == 1194)
+
 # calibrate the model and optimize free parameters
 # for only ONE individual!!
 pars <- hr_fit(
-    data = raster_maps,
-    obs = "data-raw/tracks/Aspromonte_roedeer_traj_1196.txt",
+    data = raster_maps |> as.data.frame(),
+    obs = obs,
     par = params,
     resolution = 25,
     parallel = FALSE
