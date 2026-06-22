@@ -21,16 +21,16 @@ settings <- list(
     )
   ),
   par = list(
-    r_l = list(lower=0.0001, upper=1, init = 0.5),
-    w_l = list(lower=0.0001, upper=1, init = 0.5),
-    r_d = list(lower=0.0001, upper=1, init = 0.5),
-    w_d = list(lower=-1, upper=-0.0001, init = -0.5),
-    r_dist = list(lower=0.0001, upper=1, init = 0.5),
-    w_dist = list(lower=0.0001, upper=1, init = 0.5),
+    r_l = list(lower=0.0001, upper=1, init = 0),
+    w_l = list(lower=0.0001, upper=1, init = 0),
+    r_d = list(lower=0.0001, upper=1, init = 0.1),
+    w_d = list(lower=-1, upper=1, init = -0.0001),
+    r_dist = list(lower=0.0001, upper=1, init = 0.1),
+    w_dist = list(lower=0.0001, upper=1, init = 0.1),
     step_length_dist = list(lower=0.0001, upper=0.1, init = 0.5),
     step_length_shape = list(lower=0.3, upper=3, init = 1),
-    threshold_approx_kernel = list(lower=300, upper=302, init = 301),
-    threshold_memory_kernel = list(lower=300, upper=302, init = 301),
+    threshold_approx_kernel = list(lower=6999, upper=7001, init = 7000),
+    threshold_memory_kernel = list(lower=999, upper=1001, init = 1000),
 
     # resource selection coefficients come last
     # these are unnamed
@@ -51,5 +51,7 @@ pars <- hr_fit(
     verbose = TRUE
 )
 
+plot(pars$mod)
+
 # save compressed parameters
-saveRDS(pars, "analysis/parameters_full_run.rds", compress = "xz")
+#saveRDS(pars, "analysis/parameters_full_run.rds", compress = "xz")
