@@ -31,6 +31,9 @@ hr_fit <- function(
     verbose = FALSE
 ){
 
+  # predefine variables for CRAN check compliance
+  lower <- upper <- out_optim <- NULL
+
   # define likelihood function setup
   ll <- function(X) {
     do.call(par$metric,
@@ -43,9 +46,6 @@ hr_fit <- function(
             )
     )
   }
-
-  # predefine variables for CRAN check compliance
-  lower <- upper <- out_optim <- NULL
 
   # check input variables
   if(missing(obs) | missing(data) | missing(par)){
