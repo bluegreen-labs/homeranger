@@ -38,7 +38,6 @@ Imports:
 LinkingTo: Rcpp, RcppArmadillo
 License: AGPL-3
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.2
 Suggests:
     rmarkdown,
     covr,
@@ -47,3 +46,4 @@ Suggests:
     knitr
 VignetteBuilder: knitr
 Encoding: UTF-8
+Config/roxygen2/version: 8.0.0
