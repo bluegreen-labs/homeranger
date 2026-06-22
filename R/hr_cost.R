@@ -43,6 +43,6 @@ hr_cost <- function(
   # the observed values
   cost$likelihood[cost$likelihood == -9999] <- NA
 
-  # return singe log likelihood
+  # calculate single log-likelihood
   return(sum(cost$likelihood, na.rm = TRUE))
 }
