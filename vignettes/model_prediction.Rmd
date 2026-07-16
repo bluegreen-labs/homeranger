@@ -28,7 +28,7 @@ load(system.file("extdata/drivers.rda", package = "homeranger"))
 obs <- obs[which(obs[,1] == 1196),]
 ```
 
-Once a model is calibrated you can use these parameters in a simulation, or when other known parametes are provided to you use those. Parameters are returned by the calibration routined as a nested list and should be provided as such to the prediction function `hr_predict()`.
+Once a model is calibrated you can use these parameters in a simulation, or when other known parameters are provided to you use those. Parameters are returned by the calibration routine as a nested list and should be provided as such to the prediction function `hr_predict()`.
 
 ```{r echo = TRUE, message = FALSE, eval = TRUE}
 params <- list(

@@ -1,0 +1,37 @@
+---
+title: "{homeranger}: a tool to calculate home ranges from biologging tracks and environmental co-variates"
+format: html
+editor: visual
+---
+
+## Summary
+
+{homeranger} is a framework to characterize and model memory-based home range emergence. The mechanistic model incorporates both resource selection and memory-based dynamics, and their interplay. The framework therefore expands upon classic resource selection modelling, while also providing convenient tools for movement data handling and ancillary data collection.
+
+## Statement of need
+
+Classic home range characterization uses techniques such as kernel density estimation or local convex hull methods. These post-hoc methods characterize the shape of a home range but do not allow for the exploration of the mechanisms underlying their generation. In part addressing these issues is continuous-time movement modelling, which addresses the autocorrelated nature of movement observations ({ctmm} package, REF). Although algorithms such as the Ornstein-Uhlenbeck algorithms account for range residency (central attraction) or directional persistence few of these models account for temporally varying memory dynamics, i.e. avoidance and attraction towards resources depending on time passed. The homeranger package introduces a mechanistic movement ecology model with an explicit memory component to characterize and model home ranges.
+
+## Statement of the field
+
+Home ranges define where animals live. Home ranges therefore put constraints on animal space-use. In recent years, the notion of the importance of memory in addition to resource availability has gained attention (REF). Recent work has shown that the inclusion of memory dynamics improves mechanistic movement model predictions (REF).
+
+## Software design
+
+The {homeranger} package links a C++ based movement model with an R based optimization scheme (through BayesianTools), as well as a set of tools to download ancillary data. The C++ movement model implements a combination of an information independent movement kernel and the interplay between memory and resource preference (i.e. a cognitive weighting function). Where the information independent movement kernel captures the characteristics of the animal’s movements independent of additional exogenous or endogenous capacities. The interplay between memory and resource preferences is defined as a weighting function. This weighting function allows for the implementation of a long-term attractive effect, and short-term aversion, of previously visited locations.
+
+The initial state of the model as well as the behaviour components are governed by fixed and free parameters. The fixed parameters control memory dynamics while the free (optimized) parameters are fitted to the data itself. 
+
+TABLE OF PARAMETERS + docs
+
+Model fitting is executed by minimizing the single log-likelihood of using the {BayesianTools} package. Optimized parameters can be used for movement simulation and the exploration of emergent properties. Additional information provided by the BayesianTools package can be used to estimate parameter and model simulation uncertainties.
+
+FIGURE OF MODEL FIT (either spatial representation, or better the distributions changes upon inclusion of memory - see figure 4 in Ranc et al. 2022).
+
+## Research impact statement
+
+All the publications based on the homeranger package (or its previous implementation). The original C++ code base was used in …
+
+## Acknowledgements
+
+The original model development was supported by the Harvard University Graduate Fellowship and a Fondazione Edmund Mach International Doctoral Programme Fellowship. Refactoring and further model development into an R package was supported by the French Office for Biodiversity on the TRANSLOC project (OF-25-0032).
