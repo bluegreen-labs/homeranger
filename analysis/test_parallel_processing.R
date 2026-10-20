@@ -1,3 +1,7 @@
+# This script test the manual
+# grouping of input for model optimization
+# (use case: two populations in the same region)
+
 library(homeranger)
 
 settings <- list(
@@ -5,7 +9,7 @@ settings <- list(
   control = list(
     sampler = "DEzs",
     settings = list(
-      iterations = 300
+      iterations = 100
     )
   ),
   par = list(
@@ -34,7 +38,10 @@ load(system.file("extdata/roedeer.rda", package = "homeranger"))
 load(system.file("extdata/drivers.rda", package = "homeranger"))
 
 obs <-obs |>
-  as.data.frame()
+  as.data.frame() |>
+  dplyr::filter(
+    id %in% c(1196, 1199, 1182, 1183)
+  )
 
 obs <- obs |>
   dplyr::group_split(id)

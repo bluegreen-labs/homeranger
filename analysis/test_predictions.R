@@ -85,7 +85,7 @@ output <-
     data = drivers,
     par = params,
     obs = obs,
-    steps = 10,
+    steps = 500,
     runs = 2,
     verbose = TRUE
   )

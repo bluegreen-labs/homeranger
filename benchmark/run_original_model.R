@@ -59,7 +59,7 @@ system(
 )
 
 # if it is a simulation plot the results
-if(config$value[4] == "true"){
+if(config$value[5] == "simulation"){
   library(ggplot2)
   library(terra)
   library(tidyterra)

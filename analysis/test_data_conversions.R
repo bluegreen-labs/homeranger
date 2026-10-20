@@ -54,7 +54,6 @@ output <- hr_predict(
     obs = as.matrix(p),
     steps = 1,
     runs = 1,
-    resolution = res,
     optimization = TRUE,
     verbose = TRUE
 )$likelihood
